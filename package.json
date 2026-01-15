@@ -2,27 +2,22 @@
   "name": "loyd",
   "version": "0.0.0",
   "private": true,
-  "description": "TypeScript-first form validator",
+  "description": "Loyd monorepo — TypeScript-first form validator",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
   "scripts": {
     "build": "turbo run build",
-    "build:packages": "turbo run build --filter='./packages/*'",
-    "dev": "turbo run dev --parallel",
     "test": "turbo run test",
-    "test:watch": "turbo run test:watch --parallel",
     "typecheck": "turbo run typecheck",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
     "bench": "turbo run bench",
     "clean": "turbo run clean && rm -rf node_modules",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "turbo run build && changeset publish",
-    "check:all": "turbo run build typecheck test lint"
+    "release": "turbo run build && changeset publish"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
@@ -30,7 +25,8 @@
     "turbo": "^2.3.3",
     "typescript": "^5.7.2",
     "tsup": "^8.3.5",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "@types/node": "^22.0.0"
   },
   "packageManager": "pnpm@9.15.9"
 }
