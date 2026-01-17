@@ -35,9 +35,6 @@
       },
       "security": {
         "noGlobalEval": "error"
-      },
-      "nursery": {
-        "useSortedClasses": "off"
       }
     }
   },
@@ -63,23 +60,9 @@
       "**/.turbo/**",
       "**/coverage/**",
       "fix-all.mjs",
-      "fix-biome-final.mjs",
       "build-ordered.mjs",
       "setup.mjs",
-      "fix-packages.mjs",
-      "scripts/**"
+      "fix-packages.mjs"
     ]
-  },
-  "overrides": [
-    {
-      "include": ["packages/zod-compat/src/from-zod.ts"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "noExplicitAny": "off"
-          }
-        }
-      }
-    }
-  ]
+  }
 }

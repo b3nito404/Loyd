@@ -9,31 +9,31 @@ const packagesDir = path.join(root, "packages");
 const packages = [
   {
     name: "core",
-    description: "Loyd core — zero-dependency foundation types and parse functions",
+    description: "Loyd core zero-dependency foundation types and parse functions",
     deps: {},
     peerDeps: {},
   },
   {
     name: "types",
-    description: "Loyd types — zero-runtime TypeScript inference utilities",
+    description: "Loyd types zero-runtime TypeScript inference utilities",
     deps: { "@loyd/core": "workspace:*" },
     peerDeps: {},
   },
   {
     name: "schema",
-    description: "Loyd schema — functional, tree-shakeable DSL for schema definition",
+    description: "Loyd schema functional, tree-shakeable DSL for schema definition",
     deps: { "@loyd/core": "workspace:*", "@loyd/types": "workspace:*" },
     peerDeps: {},
   },
   {
     name: "error-engine",
-    description: "Loyd error-engine — structured error codes and i18n formatter",
+    description: "Loyd error-engine structured error codes and i18n formatter",
     deps: { "@loyd/core": "workspace:*" },
     peerDeps: {},
   },
   {
     name: "compiler",
-    description: "Loyd compiler — JIT and AOT schema compilation engine",
+    description: "Loyd compiler JIT and AOT schema compilation engine",
     deps: {
       "@loyd/core": "workspace:*",
       "@loyd/schema": "workspace:*",
@@ -43,7 +43,7 @@ const packages = [
   },
   {
     name: "async",
-    description: "Loyd async — orchestrated two-pass async validation pipeline",
+    description: "Loyd async orchestrated two-pass async validation pipeline",
     deps: {
       "@loyd/core": "workspace:*",
       "@loyd/schema": "workspace:*",
@@ -53,7 +53,7 @@ const packages = [
   },
   {
     name: "runtime",
-    description: "Loyd runtime — zero-copy execution engine with strict/strip/passthrough modes",
+    description: "Loyd runtime  zero-copy execution engine with strict/strip/passthrough modes",
     deps: {
       "@loyd/core": "workspace:*",
       "@loyd/compiler": "workspace:*",
@@ -62,7 +62,7 @@ const packages = [
   },
   {
     name: "graph",
-    description: "Loyd graph — field dependency DAG for incremental form validation",
+    description: "Loyd graph field dependency DAG for incremental form validation",
     deps: {
       "@loyd/core": "workspace:*",
       "@loyd/schema": "workspace:*",
@@ -72,7 +72,7 @@ const packages = [
   },
   {
     name: "react",
-    description: "Loyd react — native React hooks for form validation",
+    description: "Loyd react  native React hooks for form validation",
     deps: {
       "@loyd/core": "workspace:*",
       "@loyd/schema": "workspace:*",
@@ -82,24 +82,29 @@ const packages = [
       "@loyd/error-engine": "workspace:*",
     },
     peerDeps: { react: ">=18.0.0", "react-dom": ">=18.0.0" },
-    devDeps: { "@types/react": "^18.3.12", "@types/react-dom": "^18.3.1", react: "^18.3.1", "react-dom": "^18.3.1" },
+    devDeps: {
+      "@types/react": "^18.3.12",
+      "@types/react-dom": "^18.3.1",
+      react: "^18.3.1",
+      "react-dom": "^18.3.1",
+    },
   },
   {
     name: "zod-compat",
-    description: "Loyd zod-compat — bidirectional Zod interop and codemod",
+    description: "Loyd zod-compat bidirectional Zod interop and codemod",
     deps: { "@loyd/core": "workspace:*", "@loyd/schema": "workspace:*" },
     peerDeps: { zod: ">=3.0.0" },
     devDeps: { zod: "^3.23.8" },
   },
   {
     name: "openapi",
-    description: "Loyd openapi — export schemas to JSONSchema7 and OpenAPI 3.1",
+    description: "Loyd openapi  export schemas to JSONSchema7 and OpenAPI 3.1",
     deps: { "@loyd/core": "workspace:*", "@loyd/schema": "workspace:*" },
     peerDeps: {},
   },
   {
     name: "vite",
-    description: "Loyd vite — Vite/Rollup plugin for AOT schema compilation",
+    description: "Loyd vite  Vite/Rollup plugin for AOT schema compilation",
     deps: { "@loyd/core": "workspace:*", "@loyd/compiler": "workspace:*" },
     peerDeps: { vite: ">=5.0.0" },
     devDeps: { vite: "^5.4.11" },
@@ -143,7 +148,8 @@ for (const pkg of packages) {
       typecheck: "tsc --noEmit",
       test: "vitest run",
       "test:watch": "vitest",
-      bench: pkg.name === "compiler" || pkg.name === "runtime" ? "vitest bench" : "echo no benchmarks",
+      bench:
+        pkg.name === "compiler" || pkg.name === "runtime" ? "vitest bench" : "echo no benchmarks",
       clean: "rm -rf dist *.tsbuildinfo",
     },
     dependencies: pkg.deps,
@@ -163,7 +169,8 @@ for (const pkg of packages) {
 
   fs.writeFileSync(
     path.join(pkgDir, "package.json"),
-    JSON.stringify(pkgJson, null, 2) + "\n"
+    `${JSON.stringify(pkgJson, null, 2)}
+`,
   );
 
   // tsconfig.json
@@ -181,7 +188,8 @@ for (const pkg of packages) {
 
   fs.writeFileSync(
     path.join(pkgDir, "tsconfig.json"),
-    JSON.stringify(tsconfig, null, 2) + "\n"
+    `${JSON.stringify(tsconfig, null, 2)}
+`,
   );
 
   const tsconfigTest = {
@@ -196,7 +204,8 @@ for (const pkg of packages) {
 
   fs.writeFileSync(
     path.join(pkgDir, "tsconfig.test.json"),
-    JSON.stringify(tsconfigTest, null, 2) + "\n"
+    `${JSON.stringify(tsconfigTest, null, 2)}
+`,
   );
 
   // tsup.config.ts

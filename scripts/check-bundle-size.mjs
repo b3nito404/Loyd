@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { gzipSync } from "zlib";
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
+import { gzipSync } from "zlib";
 
 const LIMITS = {
   "schema-minimal": { maxGzip: 820, description: "string() + email() only" },
@@ -15,7 +15,7 @@ let hasFailure = false;
 
 function checkFile(label, filePath, limit) {
   if (!existsSync(filePath)) {
-    console.warn(`⚠  ${label}: file not found (${filePath}) — skipping`);
+    console.warn(` ${label}: file not found (${filePath}) skipping`);
     return;
   }
 
@@ -47,13 +47,12 @@ for (const r of results) {
   const reset = "\x1b[0m";
   console.log(
     `${bar}${status}${reset}  ${r.label.padEnd(20)} ${String(r.gzipBytes).padStart(6)} B gzip  ` +
-    `(limit: ${r.limit} B, ${ratio}%)  — ${r.description}`
+      `(limit: ${r.limit} B, ${ratio}%)  — ${r.description}`,
   );
 }
 
-
 if (hasFailure) {
-  console.error("Bundle size check FAILED — one or more limits exceeded.");
+  console.error("Bundle size check FAILED one or more limits exceeded.");
   process.exit(1);
 } else {
   console.log("All bundle size checks passed.");
