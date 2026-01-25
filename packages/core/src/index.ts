@@ -1,4 +1,4 @@
-//@loyd/core publiv API
+// packages/core/src/index.ts
 export type {
   LoydResult,
   LoydIssue,
@@ -9,9 +9,7 @@ export type {
   TransformSchema,
   AsyncSchema,
 } from "./types.js";
-
 export { LoydError } from "./errors.js";
-
 export {
   safeParse,
   parse,
@@ -23,7 +21,5 @@ export {
   mergeIssues,
   prefixPath,
 } from "./parse.js";
-
 export { asBranded, makeBrandCaster } from "./brand.js";
-
 export { BaseSchema, getTypeName } from "./base.js";

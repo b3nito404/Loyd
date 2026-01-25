@@ -1,3 +1,4 @@
+// packages/core/src/types.ts
 export type LoydResult<T> =
   | { success: true; data: T; issues: [] }
   | { success: false; data: undefined; issues: [LoydIssue, ...LoydIssue[]] };
@@ -10,6 +11,7 @@ export interface LoydIssue {
 }
 
 export type LoydPath = ReadonlyArray<string | number>;
+
 export interface LoydSchema<TOutput, TInput = TOutput> {
   readonly _type: string;
   readonly _meta: SchemaMeta;
@@ -30,8 +32,6 @@ export interface SchemaMeta {
   [key: string]: unknown;
 }
 
-//Branded types
-
 declare const brand: unique symbol;
 export type Branded<T, B extends string> = T & { readonly [brand]: B };
 
@@ -39,7 +39,6 @@ export interface TransformSchema<TOutput, TInput> extends LoydSchema<TOutput, TI
   readonly _hasTransform: true;
 }
 
-/**Mark a scheme as potentially asynchronous*/
 export interface AsyncSchema<TOutput, TInput = TOutput> extends LoydSchema<TOutput, TInput> {
   readonly _isAsync: true;
   parseAsync(input: unknown): Promise<LoydResult<TOutput>>;
