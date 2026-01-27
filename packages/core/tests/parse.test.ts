@@ -1,6 +1,6 @@
 // packages/core/tests/parse.test.ts
-import { describe, it, expect } from "vitest";
-import { ok, fail, failOne, isOk, isFail, prefixPath, LoydError } from "../src/index.js";
+import { describe, expect, it } from "vitest";
+import { LoydError, fail, failOne, isFail, isOk, ok, prefixPath } from "../src/index.js";
 
 describe("ok()", () => {
   it("returns a success result", () => {
