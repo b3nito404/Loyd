@@ -1,20 +1,9 @@
 {
   "name": "@loyd/schema",
   "version": "0.0.0",
-  "description": "Loyd schema — functional, tree-shakeable DSL for schema definition",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "schema"
-  ],
+  "description": "Loyd schema — functional, tree-shakeable DSL",
+  "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
-  "author": "Loyd contributors",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-org/loyd.git",
-    "directory": "packages/schema"
-  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -31,10 +20,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",

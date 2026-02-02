@@ -1,81 +1,127 @@
 import { BaseSchema } from "@loyd/core";
 import type { LoydResult } from "@loyd/core";
-
 export interface NumberSchema extends BaseSchema<number> {
   readonly _type: "number";
-  min(value: number, message?: string): NumberSchema;
-  max(value: number, message?: string): NumberSchema;
-  gt(value: number, message?: string): NumberSchema;
-  gte(value: number, message?: string): NumberSchema;
-  lt(value: number, message?: string): NumberSchema;
-  lte(value: number, message?: string): NumberSchema;
-  int(message?: string): NumberSchema;
-  positive(message?: string): NumberSchema;
-  negative(message?: string): NumberSchema;
-  nonnegative(message?: string): NumberSchema;
-  multipleOf(value: number, message?: string): NumberSchema;
-  finite(message?: string): NumberSchema;
-  safe(message?: string): NumberSchema;
+  min(v: number, msg?: string): NumberSchema;
+  max(v: number, msg?: string): NumberSchema;
+  gt(v: number, msg?: string): NumberSchema;
+  gte(v: number, msg?: string): NumberSchema;
+  lt(v: number, msg?: string): NumberSchema;
+  lte(v: number, msg?: string): NumberSchema;
+  int(msg?: string): NumberSchema;
+  positive(msg?: string): NumberSchema;
+  negative(msg?: string): NumberSchema;
+  nonnegative(msg?: string): NumberSchema;
+  multipleOf(v: number, msg?: string): NumberSchema;
+  finite(msg?: string): NumberSchema;
+  safe(msg?: string): NumberSchema;
 }
-
-type NumberRule = (value: number) => LoydResult<number> | null;
-
+type Rule = (v: number) => LoydResult<number> | null;
 class NumberSchemaImpl extends BaseSchema<number> implements NumberSchema {
   readonly _type = "number" as const;
-  private readonly _rules: NumberRule[];
-
-  constructor(private readonly _msg: string | undefined, rules: NumberRule[]) {
+  constructor(
+    private readonly _msg: string | undefined,
+    readonly _rules: Rule[],
+  ) {
     super();
-    this._rules = rules;
   }
-
   _validate(input: unknown): LoydResult<number> {
-    if (typeof input !== "number") {
-      return this._fail("ERR_NUMBER_INVALID_TYPE", [], { expected: "number", received: typeof input }, this._msg);
-    }
+    if (typeof input !== "number")
+      return this._fail(
+        "ERR_NUMBER_INVALID_TYPE",
+        [],
+        { expected: "number", received: typeof input },
+        this._msg,
+      );
     if (Number.isNaN(input)) return this._fail("ERR_NUMBER_NAN", [], {}, this._msg);
-    for (const rule of this._rules) {
-      const r = rule(input);
-      if (r !== null) return r;
+    for (const r of this._rules) {
+      const res = r(input);
+      if (res !== null) return res;
     }
     return this._ok(input);
   }
-
-  private _clone(newRules: NumberRule[]): NumberSchema {
-    return new NumberSchemaImpl(this._msg, newRules);
+  private _c(rules: Rule[]) {
+    return new NumberSchemaImpl(this._msg, rules);
   }
-
-  min(value: number, message?: string): NumberSchema {
-    return this._clone([...this._rules, (v) => v < value ? this._fail("ERR_NUMBER_TOO_SMALL", [], { min: value, actual: v, inclusive: true }, message) : null]);
+  min(v: number, msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n < v
+          ? this._fail("ERR_NUMBER_TOO_SMALL", [], { min: v, actual: n, inclusive: true }, msg)
+          : null,
+    ]);
   }
-  max(value: number, message?: string): NumberSchema {
-    return this._clone([...this._rules, (v) => v > value ? this._fail("ERR_NUMBER_TOO_LARGE", [], { max: value, actual: v, inclusive: true }, message) : null]);
+  max(v: number, msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n > v
+          ? this._fail("ERR_NUMBER_TOO_LARGE", [], { max: v, actual: n, inclusive: true }, msg)
+          : null,
+    ]);
   }
-  gt(value: number, message?: string): NumberSchema {
-    return this._clone([...this._rules, (v) => v <= value ? this._fail("ERR_NUMBER_TOO_SMALL", [], { min: value, actual: v, inclusive: false }, message) : null]);
+  gt(v: number, msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n <= v
+          ? this._fail("ERR_NUMBER_TOO_SMALL", [], { min: v, actual: n, inclusive: false }, msg)
+          : null,
+    ]);
   }
-  gte(value: number, message?: string): NumberSchema { return this.min(value, message); }
-  lt(value: number, message?: string): NumberSchema {
-    return this._clone([...this._rules, (v) => v >= value ? this._fail("ERR_NUMBER_TOO_LARGE", [], { max: value, actual: v, inclusive: false }, message) : null]);
+  gte(v: number, msg?: string) {
+    return this.min(v, msg);
   }
-  lte(value: number, message?: string): NumberSchema { return this.max(value, message); }
-  int(message?: string): NumberSchema {
-    return this._clone([...this._rules, (v) => !Number.isInteger(v) ? this._fail("ERR_NUMBER_NOT_INTEGER", [], {}, message) : null]);
+  lt(v: number, msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n >= v
+          ? this._fail("ERR_NUMBER_TOO_LARGE", [], { max: v, actual: n, inclusive: false }, msg)
+          : null,
+    ]);
   }
-  positive(message?: string): NumberSchema { return this.gt(0, message); }
-  negative(message?: string): NumberSchema { return this.lt(0, message); }
-  nonnegative(message?: string): NumberSchema { return this.min(0, message); }
-  multipleOf(value: number, message?: string): NumberSchema {
-    return this._clone([...this._rules, (v) => v % value !== 0 ? this._fail("ERR_NUMBER_NOT_MULTIPLE", [], { multipleOf: value, actual: v }, message) : null]);
+  lte(v: number, msg?: string) {
+    return this.max(v, msg);
   }
-  finite(message?: string): NumberSchema {
-    return this._clone([...this._rules, (v) => !Number.isFinite(v) ? this._fail("ERR_NUMBER_NOT_FINITE", [], {}, message) : null]);
+  int(msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) => (!Number.isInteger(n) ? this._fail("ERR_NUMBER_NOT_INTEGER", [], {}, msg) : null),
+    ]);
   }
-  safe(message?: string): NumberSchema {
-    return this._clone([...this._rules, (v) => !Number.isSafeInteger(v) ? this._fail("ERR_NUMBER_NOT_INTEGER", [], {}, message) : null]);
+  positive(msg?: string) {
+    return this.gt(0, msg);
+  }
+  negative(msg?: string) {
+    return this.lt(0, msg);
+  }
+  nonnegative(msg?: string) {
+    return this.min(0, msg);
+  }
+  multipleOf(v: number, msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n % v !== 0
+          ? this._fail("ERR_NUMBER_NOT_MULTIPLE", [], { multipleOf: v, actual: n }, msg)
+          : null,
+    ]);
+  }
+  finite(msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) => (!Number.isFinite(n) ? this._fail("ERR_NUMBER_NOT_FINITE", [], {}, msg) : null),
+    ]);
+  }
+  safe(msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) => (!Number.isSafeInteger(n) ? this._fail("ERR_NUMBER_NOT_INTEGER", [], {}, msg) : null),
+    ]);
   }
 }
-
-export function number(message?: string): NumberSchema {
-  return new NumberSchemaImpl(message, []);
+export function number(msg?: string): NumberSchema {
+  return new NumberSchemaImpl(msg, []);
 }

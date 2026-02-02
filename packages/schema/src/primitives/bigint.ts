@@ -1,36 +1,89 @@
 import { BaseSchema } from "@loyd/core";
 import type { LoydResult } from "@loyd/core";
-
 export interface BigIntSchema extends BaseSchema<bigint> {
   readonly _type: "bigint";
-  min(value: bigint, message?: string): BigIntSchema;
-  max(value: bigint, message?: string): BigIntSchema;
-  positive(message?: string): BigIntSchema;
-  negative(message?: string): BigIntSchema;
-  nonnegative(message?: string): BigIntSchema;
-  multipleOf(value: bigint, message?: string): BigIntSchema;
+  min(v: bigint, msg?: string): BigIntSchema;
+  max(v: bigint, msg?: string): BigIntSchema;
+  positive(msg?: string): BigIntSchema;
+  negative(msg?: string): BigIntSchema;
+  nonnegative(msg?: string): BigIntSchema;
+  multipleOf(v: bigint, msg?: string): BigIntSchema;
 }
-
-type BigIntRule = (value: bigint) => LoydResult<bigint> | null;
-
+type Rule = (v: bigint) => LoydResult<bigint> | null;
 class BigIntSchemaImpl extends BaseSchema<bigint> implements BigIntSchema {
   readonly _type = "bigint" as const;
-  private readonly _rules: BigIntRule[];
-  constructor(private readonly _msg: string | undefined, rules: BigIntRule[]) { super(); this._rules = rules; }
-
+  constructor(
+    private readonly _msg: string | undefined,
+    private readonly _rules: Rule[],
+  ) {
+    super();
+  }
   _validate(input: unknown): LoydResult<bigint> {
-    if (typeof input !== "bigint") return this._fail("ERR_BIGINT_INVALID_TYPE", [], { received: typeof input }, this._msg);
-    for (const rule of this._rules) { const r = rule(input); if (r !== null) return r; }
+    if (typeof input !== "bigint")
+      return this._fail("ERR_BIGINT_INVALID_TYPE", [], { received: typeof input }, this._msg);
+    for (const r of this._rules) {
+      const res = r(input);
+      if (res !== null) return res;
+    }
     return this._ok(input);
   }
-
-  private _clone(rules: BigIntRule[]): BigIntSchema { return new BigIntSchemaImpl(this._msg, rules); }
-  min(value: bigint, message?: string): BigIntSchema { return this._clone([...this._rules, (v) => v < value ? this._fail("ERR_NUMBER_TOO_SMALL", [], { min: value.toString(), actual: v.toString() }, message) : null]); }
-  max(value: bigint, message?: string): BigIntSchema { return this._clone([...this._rules, (v) => v > value ? this._fail("ERR_NUMBER_TOO_LARGE", [], { max: value.toString(), actual: v.toString() }, message) : null]); }
-  positive(message?: string): BigIntSchema { return this._clone([...this._rules, (v) => v <= 0n ? this._fail("ERR_NUMBER_NOT_POSITIVE", [], {}, message) : null]); }
-  negative(message?: string): BigIntSchema { return this._clone([...this._rules, (v) => v >= 0n ? this._fail("ERR_NUMBER_NOT_NEGATIVE", [], {}, message) : null]); }
-  nonnegative(message?: string): BigIntSchema { return this._clone([...this._rules, (v) => v < 0n ? this._fail("ERR_NUMBER_TOO_SMALL", [], { min: "0", actual: v.toString() }, message) : null]); }
-  multipleOf(value: bigint, message?: string): BigIntSchema { return this._clone([...this._rules, (v) => v % value !== 0n ? this._fail("ERR_NUMBER_NOT_MULTIPLE", [], { multipleOf: value.toString(), actual: v.toString() }, message) : null]); }
+  private _c(rules: Rule[]) {
+    return new BigIntSchemaImpl(this._msg, rules);
+  }
+  min(v: bigint, msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n < v
+          ? this._fail("ERR_NUMBER_TOO_SMALL", [], { min: v.toString(), actual: n.toString() }, msg)
+          : null,
+    ]);
+  }
+  max(v: bigint, msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n > v
+          ? this._fail("ERR_NUMBER_TOO_LARGE", [], { max: v.toString(), actual: n.toString() }, msg)
+          : null,
+    ]);
+  }
+  positive(msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) => (n <= 0n ? this._fail("ERR_NUMBER_NOT_POSITIVE", [], {}, msg) : null),
+    ]);
+  }
+  negative(msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) => (n >= 0n ? this._fail("ERR_NUMBER_NOT_NEGATIVE", [], {}, msg) : null),
+    ]);
+  }
+  nonnegative(msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n < 0n
+          ? this._fail("ERR_NUMBER_TOO_SMALL", [], { min: "0", actual: n.toString() }, msg)
+          : null,
+    ]);
+  }
+  multipleOf(v: bigint, msg?: string) {
+    return this._c([
+      ...this._rules,
+      (n) =>
+        n % v !== 0n
+          ? this._fail(
+              "ERR_NUMBER_NOT_MULTIPLE",
+              [],
+              { multipleOf: v.toString(), actual: n.toString() },
+              msg,
+            )
+          : null,
+    ]);
+  }
 }
-
-export function bigint(message?: string): BigIntSchema { return new BigIntSchemaImpl(message, []); }
+export function bigint(msg?: string): BigIntSchema {
+  return new BigIntSchemaImpl(msg, []);
+}
