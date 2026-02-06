@@ -1,58 +1,57 @@
 import { BaseSchema } from "@loyd/core";
-import type { LoydSchema, LoydResult, LoydIssue } from "@loyd/core";
-
+import type { LoydResult, LoydSchema } from "@loyd/core";
 export interface TupleSchema<T extends unknown[]> extends BaseSchema<T> {
   readonly _type: "tuple";
-  rest<R>(schema: LoydSchema<R>): BaseSchema<[...T, ...R[]]>;
 }
-
 class TupleSchemaImpl<T extends unknown[]> extends BaseSchema<T> implements TupleSchema<T> {
   readonly _type = "tuple" as const;
-  constructor(private readonly _items: ReadonlyArray<LoydSchema<unknown>>, private readonly _msg?: string) { super(); }
-
+  constructor(
+    private readonly _items: ReadonlyArray<LoydSchema<unknown>>,
+    private readonly _msg?: string,
+  ) {
+    super();
+  }
   _validate(input: unknown): LoydResult<T> {
-    if (!Array.isArray(input)) return this._fail("ERR_TUPLE_INVALID_TYPE", [], { received: typeof input }, this._msg);
-    if (input.length !== this._items.length) return this._fail("ERR_TUPLE_INVALID_LENGTH", [], { expected: this._items.length, actual: input.length }, this._msg);
-    const result: unknown[] = [];
-    const issues: LoydIssue[] = [];
-    for (let i = 0; i < this._items.length; i++) {
-      const r = this._items[i]!.safeParse(input[i]);
-      if (r.success) result.push(r.data);
-      else for (const iss of r.issues) issues.push({ ...iss, path: [i, ...iss.path] });
+    if (!Array.isArray(input)) {
+      return this._fail("ERR_TUPLE_INVALID_TYPE", [], {
+        expected: "tuple",
+        received: typeof input,
+      });
     }
-    if (issues.length > 0) return { success: false, data: undefined, issues: issues as [LoydIssue, ...LoydIssue[]] };
-    return this._ok(result as T);
-  }
-
-  rest<R>(schema: LoydSchema<R>): BaseSchema<[...T, ...R[]]> {
-    return new TupleWithRestSchemaImpl<T, R>(this._items, schema);
+    if (input.length !== this._items.length) {
+      return this._fail("ERR_TUPLE_INVALID_LENGTH", [], {
+        expected: this._items.length,
+        actual: input.length,
+      });
+    }
+    const data: unknown[] = [];
+    const issues: import("@loyd/core").LoydIssue[] = [];
+    for (let i = 0; i < this._items.length; i++) {
+      const item = this._items[i];
+      const val = input[i];
+      if (!item) continue;
+      const r = item.safeParse(val);
+      if (!r.success) {
+        for (const iss of r.issues) {
+          issues.push({ ...iss, path: [i, ...iss.path] });
+        }
+      } else {
+        data.push(r.data);
+      }
+    }
+    if (issues.length > 0) {
+      return {
+        success: false as const,
+        data: undefined,
+        issues: issues as [import("@loyd/core").LoydIssue, ...import("@loyd/core").LoydIssue[]],
+      };
+    }
+    return this._ok(data as never);
   }
 }
-
-class TupleWithRestSchemaImpl<T extends unknown[], R> extends BaseSchema<[...T, ...R[]]> {
-  readonly _type = "tuple" as const;
-  constructor(private readonly _items: ReadonlyArray<LoydSchema<unknown>>, private readonly _rest: LoydSchema<R>) { super(); }
-
-  _validate(input: unknown): LoydResult<[...T, ...R[]]> {
-    if (!Array.isArray(input)) return this._fail("ERR_TUPLE_INVALID_TYPE", [], { received: typeof input });
-    if (input.length < this._items.length) return this._fail("ERR_TUPLE_INVALID_LENGTH", [], { expected: this._items.length, actual: input.length });
-    const result: unknown[] = [];
-    const issues: LoydIssue[] = [];
-    for (let i = 0; i < this._items.length; i++) {
-      const r = this._items[i]!.safeParse(input[i]);
-      if (r.success) result.push(r.data);
-      else for (const iss of r.issues) issues.push({ ...iss, path: [i, ...iss.path] });
-    }
-    for (let i = this._items.length; i < input.length; i++) {
-      const r = this._rest.safeParse(input[i]);
-      if (r.success) result.push(r.data);
-      else for (const iss of r.issues) issues.push({ ...iss, path: [i, ...iss.path] });
-    }
-    if (issues.length > 0) return { success: false, data: undefined, issues: issues as [LoydIssue, ...LoydIssue[]] };
-    return this._ok(result as [...T, ...R[]]);
-  }
-}
-
-export function tuple<T extends unknown[]>(items: { [K in keyof T]: LoydSchema<T[K]> }, message?: string): TupleSchema<T> {
-  return new TupleSchemaImpl<T>(items as ReadonlyArray<LoydSchema<unknown>>, message);
+export function tuple<T extends unknown[]>(
+  items: { [K in keyof T]: LoydSchema<T[K]> },
+  msg?: string,
+): TupleSchema<T> {
+  return new TupleSchemaImpl<T>(items as ReadonlyArray<LoydSchema<unknown>>, msg);
 }

@@ -1,31 +1,62 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydSchema, LoydResult, LoydIssue } from "@loyd/core";
-import type { SchemaMap, InferSchemaMap, InferSchemaMapInput } from "@loyd/types";
+import { BaseSchema, ok } from "@loyd/core";
+import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
+import type { InferSchemaMap, InferSchemaMapInput, SchemaMap } from "@loyd/types";
 
 export type ObjectUnknownKeys = "strip" | "strict" | "passthrough";
 
-// Interface with deliberately loose return types for builder methods
-// to avoid recursive generic constraint issues in TypeScript DTS emit.
-export interface ObjectSchema<TShape extends SchemaMap>
+export interface ObjectSchema<TShape extends SchemaMap = Record<string, LoydSchema<unknown>>>
   extends BaseSchema<InferSchemaMap<TShape>, InferSchemaMapInput<TShape>> {
   readonly _type: "object";
   readonly shape: TShape;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  partial(): ObjectSchema<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  required(): ObjectSchema<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pick(keys: readonly string[]): ObjectSchema<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  omit(keys: readonly string[]): ObjectSchema<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extend(shape: SchemaMap): ObjectSchema<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  merge(other: ObjectSchema<any>): ObjectSchema<any>;
-  unknownKeys(behavior: ObjectUnknownKeys): ObjectSchema<TShape>;
-  strict(message?: string): ObjectSchema<TShape>;
+
+  partial(): ObjectSchema;
+  required(): ObjectSchema;
+
+  pick(keys: readonly string[]): ObjectSchema;
+  omit(keys: readonly string[]): ObjectSchema;
+
+  extend(shape: SchemaMap): ObjectSchema;
+  merge(other: ObjectSchema): ObjectSchema;
+
+  unknownKeys(mode: ObjectUnknownKeys): ObjectSchema<TShape>;
+  strict(msg?: string): ObjectSchema<TShape>;
   strip(): ObjectSchema<TShape>;
   passthrough(): ObjectSchema<TShape>;
+}
+
+function wrapOpt<T>(schema: LoydSchema<T>): LoydSchema<T | undefined> {
+  return {
+    _type: "optional",
+    _meta: schema._meta,
+    _output: undefined as unknown as T | undefined,
+    _input: undefined as unknown as T | undefined,
+
+    safeParse(input: unknown): LoydResult<T | undefined> {
+      if (input === undefined) {
+        return ok(undefined);
+      }
+
+      return schema.safeParse(input) as LoydResult<T | undefined>;
+    },
+
+    parse(input: unknown) {
+      return this.safeParse(input);
+    },
+
+    parseOrThrow(input: unknown) {
+      const r = this.safeParse(input);
+      if (r.success) return r.data;
+      throw new Error(r.issues[0]?.code ?? "ERR");
+    },
+
+    meta() {
+      return schema.meta();
+    },
+
+    describe(description: string) {
+      return schema.describe(description) as unknown as LoydSchema<T | undefined>;
+    },
+  };
 }
 
 class ObjectSchemaImpl<TShape extends SchemaMap>
@@ -34,8 +65,9 @@ class ObjectSchemaImpl<TShape extends SchemaMap>
 {
   readonly _type = "object" as const;
   readonly shape: TShape;
-  private readonly _unknownKeys: ObjectUnknownKeys;
-  private readonly _strictMsg: string | undefined;
+
+  readonly _unknownKeys: ObjectUnknownKeys;
+  private readonly _strictMsg?: string;
 
   constructor(shape: TShape, unknownKeys: ObjectUnknownKeys = "strip", strictMsg?: string) {
     super();
@@ -51,35 +83,47 @@ class ObjectSchemaImpl<TShape extends SchemaMap>
         received: typeof input,
       });
     }
+
     const raw = input as Record<string, unknown>;
     const result: Record<string, unknown> = {};
     const issues: LoydIssue[] = [];
+
     const knownKeys = new Set(Object.keys(this.shape));
 
+    // validate fields
     for (const key of Object.keys(this.shape)) {
       const fieldSchema = this.shape[key as keyof TShape] as LoydSchema<unknown>;
       const fieldResult = fieldSchema.safeParse(raw[key]);
+
       if (fieldResult.success) {
         result[key] = fieldResult.data;
       } else {
         for (const issue of fieldResult.issues) {
-          issues.push({ ...issue, path: [key, ...issue.path] });
+          issues.push({
+            ...issue,
+            path: [key, ...issue.path],
+          });
         }
       }
     }
 
-    const unknownList = Object.keys(raw).filter((k) => !knownKeys.has(k));
-    if (unknownList.length > 0) {
+    // unknown keys handling
+    const unknownKeys = Object.keys(raw).filter((k) => !knownKeys.has(k));
+
+    if (unknownKeys.length > 0) {
       if (this._unknownKeys === "strict") {
         issues.push({
           code: "ERR_OBJECT_UNKNOWN_KEYS",
           path: [],
-          meta: { keys: unknownList },
+          meta: { keys: unknownKeys },
           ...(this._strictMsg ? { message: this._strictMsg } : {}),
         });
       } else if (this._unknownKeys === "passthrough") {
-        for (const k of unknownList) result[k] = raw[k];
+        for (const key of unknownKeys) {
+          result[key] = raw[key];
+        }
       }
+      // strip = do nothing
     }
 
     if (issues.length > 0) {
@@ -89,95 +133,75 @@ class ObjectSchemaImpl<TShape extends SchemaMap>
         issues: issues as [LoydIssue, ...LoydIssue[]],
       };
     }
+
     return this._ok(result as InferSchemaMap<TShape>);
   }
 
+  partial(): ObjectSchema {
+    const shape: Record<string, LoydSchema<unknown>> = {};
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  partial(): ObjectSchema<any> {
-    const newShape: Record<string, LoydSchema<unknown>> = {};
-    for (const k of Object.keys(this.shape)) {
-      newShape[k] = wrapOptional(this.shape[k as keyof TShape] as LoydSchema<unknown>);
+    for (const key of Object.keys(this.shape)) {
+      shape[key] = wrapOpt(this.shape[key as keyof TShape] as LoydSchema<unknown>);
     }
-    return new ObjectSchemaImpl(newShape as SchemaMap, this._unknownKeys);
+
+    return new ObjectSchemaImpl(shape as SchemaMap, this._unknownKeys);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  required(): ObjectSchema<any> {
+  required(): ObjectSchema {
     return new ObjectSchemaImpl(this.shape, this._unknownKeys);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pick(keys: readonly string[]): ObjectSchema<any> {
-    const s: Record<string, unknown> = {};
-    for (const k of keys) {
-      if (k in this.shape) s[k] = this.shape[k as keyof TShape];
+  pick(keys: readonly string[]): ObjectSchema {
+    const shape: Record<string, unknown> = {};
+
+    for (const key of keys) {
+      if (key in this.shape) {
+        shape[key] = this.shape[key as keyof TShape];
+      }
     }
-    return new ObjectSchemaImpl(s as SchemaMap, this._unknownKeys);
+
+    return new ObjectSchemaImpl(shape as SchemaMap, this._unknownKeys);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  omit(keys: readonly string[]): ObjectSchema<any> {
+  omit(keys: readonly string[]): ObjectSchema {
     const omitSet = new Set(keys);
-    const s: Record<string, unknown> = {};
-    for (const k of Object.keys(this.shape)) {
-      if (!omitSet.has(k)) s[k] = this.shape[k as keyof TShape];
+    const shape: Record<string, unknown> = {};
+
+    for (const key of Object.keys(this.shape)) {
+      if (!omitSet.has(key)) {
+        shape[key] = this.shape[key as keyof TShape];
+      }
     }
-    return new ObjectSchemaImpl(s as SchemaMap, this._unknownKeys);
+
+    return new ObjectSchemaImpl(shape as SchemaMap, this._unknownKeys);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extend(shape: SchemaMap): ObjectSchema<any> {
+  extend(shape: SchemaMap): ObjectSchema {
     return new ObjectSchemaImpl({ ...this.shape, ...shape }, this._unknownKeys);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  merge(other: ObjectSchema<any>): ObjectSchema<any> {
+  merge(other: ObjectSchema<Record<string, LoydSchema<unknown>>>): ObjectSchema {
     return new ObjectSchemaImpl(
-      { ...this.shape, ...(other as ObjectSchemaImpl<SchemaMap>).shape },
+      { ...this.shape, ...other.shape },
       this._unknownKeys,
-    );
+    ) as unknown as ObjectSchema;
   }
 
-  unknownKeys(b: ObjectUnknownKeys): ObjectSchema<TShape> {
-    return new ObjectSchemaImpl(this.shape, b);
+  unknownKeys(mode: ObjectUnknownKeys): ObjectSchema<TShape> {
+    return new ObjectSchemaImpl(this.shape, mode);
   }
-  strict(message?: string): ObjectSchema<TShape> {
-    return new ObjectSchemaImpl(this.shape, "strict", message);
+
+  strict(msg?: string): ObjectSchema<TShape> {
+    return new ObjectSchemaImpl(this.shape, "strict", msg);
   }
+
   strip(): ObjectSchema<TShape> {
     return new ObjectSchemaImpl(this.shape, "strip");
   }
+
   passthrough(): ObjectSchema<TShape> {
     return new ObjectSchemaImpl(this.shape, "passthrough");
   }
-}
-
-function wrapOptional<T>(schema: LoydSchema<T>): LoydSchema<T | undefined> {
-  return {
-    _type: "optional",
-    _meta: schema._meta,
-    _output: undefined as unknown as T | undefined,
-    _input: undefined as unknown as T | undefined,
-    safeParse(input: unknown): LoydResult<T | undefined> {
-      if (input === undefined) return { success: true, data: undefined, issues: [] };
-      return schema.safeParse(input) as LoydResult<T | undefined>;
-    },
-    parse(input: unknown) {
-      return this.safeParse(input);
-    },
-    parseOrThrow(input: unknown) {
-      const r = this.safeParse(input);
-      if (r.success) return r.data;
-      throw new Error(r.issues[0]?.code ?? "ERR_UNKNOWN");
-    },
-    meta() {
-      return schema.meta();
-    },
-    describe(d: string) {
-      return schema.describe(d) as unknown as LoydSchema<T | undefined>;
-    },
-  };
 }
 
 export function object<T extends SchemaMap>(shape: T): ObjectSchema<T> {
