@@ -1,11 +1,22 @@
 import { BaseSchema } from "@loyd/core";
 import type { LoydResult } from "@loyd/core";
-
-export interface TransformedSchema<TOut, TIn> extends BaseSchema<TOut, TIn> { readonly _type: "transform"; }
-
-class TransformSchemaImpl<TOut, TIn> extends BaseSchema<TOut, TIn> implements TransformedSchema<TOut, TIn> {
+export interface TransformedSchema<TOut, TIn> extends BaseSchema<TOut, TIn> {
+  readonly _type: "transform";
+  readonly _inner: BaseSchema<TIn>;
+}
+class TransformSchemaImpl<TOut, TIn>
+  extends BaseSchema<TOut, TIn>
+  implements TransformedSchema<TOut, TIn>
+{
   readonly _type = "transform" as const;
-  constructor(private readonly _inner: BaseSchema<TIn>, private readonly _fn: (v: TIn) => TOut) { super(); }
+  readonly _inner: BaseSchema<TIn>;
+  constructor(
+    inner: BaseSchema<TIn>,
+    private readonly _fn: (v: TIn) => TOut,
+  ) {
+    super();
+    this._inner = inner;
+  }
   _validate(input: unknown): LoydResult<TOut> {
     const r = this._inner.safeParse(input);
     if (!r.success) return r as unknown as LoydResult<TOut>;
@@ -16,6 +27,9 @@ class TransformSchemaImpl<TOut, TIn> extends BaseSchema<TOut, TIn> implements Tr
     }
   }
 }
-export function transform<TIn, TOut>(schema: BaseSchema<TIn>, fn: (v: TIn) => TOut): TransformedSchema<TOut, TIn> {
+export function transform<TIn, TOut>(
+  schema: BaseSchema<TIn>,
+  fn: (v: TIn) => TOut,
+): TransformedSchema<TOut, TIn> {
   return new TransformSchemaImpl(schema, fn);
 }
