@@ -1,18 +1,28 @@
 import { BaseSchema } from "@loyd/core";
-import type { LoydSchema, LoydResult } from "@loyd/core";
+import type { LoydResult, LoydSchema } from "@loyd/core";
 import type { RefineOptions } from "./refine.js";
-
+class RefineAsyncSchema<T> extends BaseSchema<T> {
+  readonly _type = "refineAsync" as const;
+  readonly _isAsync = true as const;
+  readonly _pred: (v: T, signal?: AbortSignal) => Promise<boolean>;
+  readonly _opts: RefineOptions;
+  constructor(
+    private readonly _inner: LoydSchema<T>,
+    pred: (v: T, signal?: AbortSignal) => Promise<boolean>,
+    opts: RefineOptions,
+  ) {
+    super();
+    this._pred = pred;
+    this._opts = opts;
+  }
+  _validate(input: unknown): LoydResult<T> {
+    return this._inner.safeParse(input);
+  }
+}
 export function refineAsync<T>(
   schema: LoydSchema<T>,
-  // AbortSignal comes from DOM / @types/node typed as unknown for Phase 0 stub
-  pred: (v: T, signal?: unknown) => Promise<boolean>,
+  pred: (v: T, signal?: AbortSignal) => Promise<boolean>,
   opts: RefineOptions,
-): LoydSchema<T> {
-  const stub = new (class extends BaseSchema<T> {
-    readonly _type = "refineAsync" as const;
-    _validate(input: unknown): LoydResult<T> {
-      return schema.safeParse(input);
-    }
-  })();
-  return stub;
+): LoydSchema<T> & { readonly _isAsync: true } {
+  return new RefineAsyncSchema(schema, pred, opts);
 }
