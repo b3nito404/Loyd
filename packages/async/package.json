@@ -1,20 +1,9 @@
 {
   "name": "@loyd/async",
   "version": "0.0.0",
-  "description": "Loyd async — orchestrated two-pass async validation pipeline",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "schema"
-  ],
+  "description": "Loyd async — two-pass async pipeline",
+  "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
-  "author": "Loyd contributors",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-org/loyd.git",
-    "directory": "packages/async"
-  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -31,10 +20,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
@@ -51,6 +37,7 @@
     "@loyd/compiler": "workspace:*"
   },
   "devDependencies": {
+    "@loyd/schema": "workspace:*",
     "typescript": "^5.7.2",
     "tsup": "^8.3.5",
     "vitest": "^2.1.8"
