@@ -1,7 +1,7 @@
 export type { CompiledValidatorFn, CompilerOptions } from "./jit/compiler.js";
 export { compile, invalidateCache, clearCache, isCompiled } from "./jit/compiler.js";
 
-export type { CodegenResult, CodegenOptions } from "./jit/codegen.js";
+export type { CodegenResult, CodegenOptions } from "./jit/types.js";
 export { generateCode } from "./jit/codegen.js";
 
 export type { CompilerCache } from "./jit/cache.js";

@@ -1,20 +1,9 @@
 {
   "name": "@loyd/compiler",
   "version": "0.0.0",
-  "description": "Loyd compiler — JIT and AOT schema compilation engine",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "schema"
-  ],
+  "description": "Loyd compiler — JIT and AOT engine",
+  "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
-  "author": "Loyd contributors",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-org/loyd.git",
-    "directory": "packages/compiler"
-  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -31,10 +20,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
@@ -51,6 +37,7 @@
     "@loyd/error-engine": "workspace:*"
   },
   "devDependencies": {
+    "@loyd/schema": "workspace:*",
     "typescript": "^5.7.2",
     "tsup": "^8.3.5",
     "vitest": "^2.1.8"
