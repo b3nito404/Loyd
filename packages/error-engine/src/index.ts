@@ -7,6 +7,14 @@ export type {
   LoydFormatter,
   CreateFormatterFn,
 } from "./formatter.js";
+export { createFormatter, formatPath } from "./formatter.js";
+export {
+  setGlobalFormatter,
+  getGlobalFormatter,
+  configureFormatter,
+  applyFormatter,
+  applyFormatterAll,
+} from "./global.js";
 export { en } from "./locales/en.js";
 export { fr } from "./locales/fr.js";
 export { es } from "./locales/es.js";
