@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/schema" },
+    { "path": "./packages/types" },
+    { "path": "./packages/compiler" },
+    { "path": "./packages/error-engine" },
+    { "path": "./packages/async" },
+    { "path": "./packages/runtime" },
+    { "path": "./packages/graph" },
+    { "path": "./packages/react" },
+    { "path": "./packages/zod-compat" },
+    { "path": "./packages/openapi" },
+    { "path": "./packages/vite" }
+  ]
+}

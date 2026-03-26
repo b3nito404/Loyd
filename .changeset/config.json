@@ -1,0 +1,22 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [
+    [
+      "@loyd/core",
+      "@loyd/schema",
+      "@loyd/types",
+      "@loyd/compiler",
+      "@loyd/error-engine",
+      "@loyd/async",
+      "@loyd/runtime",
+      "@loyd/graph"
+    ]
+  ],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
