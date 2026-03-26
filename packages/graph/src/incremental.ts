@@ -1,5 +1,5 @@
 // packages/graph/src/incremental.ts
-import type { LoydResult, LoydIssue } from "@loyd/core";
+import type { LoydIssue, LoydResult } from "@loyd/core";
 import type { FieldDag } from "./dag.js";
 import type { DirtyTracker } from "./dirty.js";
 
@@ -39,5 +39,5 @@ export declare function validateIncremental<T>(
   dirtyTracker: DirtyTracker,
   input: unknown,
   previousIssues: LoydIssue[],
-  options?: IncrementalValidationOptions,
+  options?: IncrementalValidationOptions
 ): IncrementalValidationResult<T>;

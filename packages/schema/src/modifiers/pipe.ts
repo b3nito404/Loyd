@@ -1,11 +1,18 @@
 import { BaseSchema } from "@loyd/core";
-import type { LoydSchema, LoydResult } from "@loyd/core";
+import type { LoydResult, LoydSchema } from "@loyd/core";
 
-export interface PipeOptions { continueOnError?: boolean; }
+export interface PipeOptions {
+  continueOnError?: boolean;
+}
 
 class PipeSchemaImpl<T> extends BaseSchema<T> {
   readonly _type = "pipe" as const;
-  constructor(private readonly _schemas: ReadonlyArray<LoydSchema<T>>, private readonly _opts?: PipeOptions) { super(); }
+  constructor(
+    private readonly _schemas: ReadonlyArray<LoydSchema<T>>,
+    private readonly _opts?: PipeOptions
+  ) {
+    super();
+  }
   _validate(input: unknown): LoydResult<T> {
     let current: unknown = input;
     for (const s of this._schemas) {
@@ -23,6 +30,10 @@ class PipeSchemaImpl<T> extends BaseSchema<T> {
 export function pipe<T>(schema: LoydSchema<T>, ...rules: Array<LoydSchema<T>>): LoydSchema<T> {
   return new PipeSchemaImpl([schema, ...rules]);
 }
-export function pipeWith<T>(options: PipeOptions, schema: LoydSchema<T>, ...rules: Array<LoydSchema<T>>): LoydSchema<T> {
+export function pipeWith<T>(
+  options: PipeOptions,
+  schema: LoydSchema<T>,
+  ...rules: Array<LoydSchema<T>>
+): LoydSchema<T> {
   return new PipeSchemaImpl([schema, ...rules], options);
 }

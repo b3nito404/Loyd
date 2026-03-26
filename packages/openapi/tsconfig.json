@@ -7,9 +7,7 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "composite": false
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "references": [
     {
       "path": "../core"

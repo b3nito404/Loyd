@@ -1,5 +1,5 @@
 import { BaseSchema } from "@loyd/core";
-import type { LoydSchema, LoydResult, LoydIssue } from "@loyd/core";
+import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
 
 export interface UnionSchema<T> extends BaseSchema<T> {
   readonly _type: "union";
@@ -12,7 +12,12 @@ export interface DiscriminatedUnionSchema<T> extends BaseSchema<T> {
 
 class UnionSchemaImpl<T> extends BaseSchema<T> implements UnionSchema<T> {
   readonly _type = "union" as const;
-  constructor(private readonly _options: ReadonlyArray<LoydSchema<unknown>>, private readonly _msg?: string) { super(); }
+  constructor(
+    private readonly _options: ReadonlyArray<LoydSchema<unknown>>,
+    private readonly _msg?: string
+  ) {
+    super();
+  }
 
   _validate(input: unknown): LoydResult<T> {
     const childIssues: LoydIssue[][] = [];
@@ -30,7 +35,11 @@ class DiscriminatedUnionSchemaImpl<T> extends BaseSchema<T> implements Discrimin
   readonly discriminatorKey: string;
   private readonly _map: Map<unknown, LoydSchema<unknown>>;
 
-  constructor(key: string, options: ReadonlyArray<LoydSchema<unknown>>, private readonly _msg?: string) {
+  constructor(
+    key: string,
+    options: ReadonlyArray<LoydSchema<unknown>>,
+    private readonly _msg?: string
+  ) {
     super();
     this.discriminatorKey = key;
     this._map = new Map();
@@ -38,7 +47,7 @@ class DiscriminatedUnionSchemaImpl<T> extends BaseSchema<T> implements Discrimin
       // Try to get discriminator value from the schema shape
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const shape = (option as any).shape as Record<string, LoydSchema<unknown>> | undefined;
-      if (shape && shape[key]) {
+      if (shape?.[key]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const literalValue = (shape[key] as any).value;
         if (literalValue !== undefined) this._map.set(literalValue, option);
@@ -54,16 +63,28 @@ class DiscriminatedUnionSchemaImpl<T> extends BaseSchema<T> implements Discrimin
     const discriminatorValue = raw[this.discriminatorKey];
     const matchedSchema = this._map.get(discriminatorValue);
     if (!matchedSchema) {
-      return this._fail("ERR_DISCRIMINATED_UNION_INVALID_KEY", [], { key: this.discriminatorKey, received: discriminatorValue }, this._msg);
+      return this._fail(
+        "ERR_DISCRIMINATED_UNION_INVALID_KEY",
+        [],
+        { key: this.discriminatorKey, received: discriminatorValue },
+        this._msg
+      );
     }
     return matchedSchema.safeParse(input) as LoydResult<T>;
   }
 }
 
-export function union<T>(options: ReadonlyArray<LoydSchema<unknown>>, message?: string): UnionSchema<T> {
+export function union<T>(
+  options: ReadonlyArray<LoydSchema<unknown>>,
+  message?: string
+): UnionSchema<T> {
   return new UnionSchemaImpl<T>(options, message);
 }
 
-export function discriminatedUnion<T>(key: string, options: ReadonlyArray<LoydSchema<unknown>>, message?: string): DiscriminatedUnionSchema<T> {
+export function discriminatedUnion<T>(
+  key: string,
+  options: ReadonlyArray<LoydSchema<unknown>>,
+  message?: string
+): DiscriminatedUnionSchema<T> {
   return new DiscriminatedUnionSchemaImpl<T>(key, options, message);
 }

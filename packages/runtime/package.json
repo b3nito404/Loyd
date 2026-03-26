@@ -2,12 +2,7 @@
   "name": "@loyd/runtime",
   "version": "0.0.0",
   "description": "Loyd runtime — zero-copy execution engine",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "schema"
-  ],
+  "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
   "author": "Loyd contributors",
   "repository": {
@@ -31,10 +26,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",

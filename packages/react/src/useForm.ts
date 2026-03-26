@@ -1,5 +1,5 @@
-import type { LoydSchema, LoydIssue } from "@loyd/core";
 import type { ParseAsyncOptions } from "@loyd/async";
+import type { LoydIssue, LoydSchema } from "@loyd/core";
 import type { DagBuildOptions } from "@loyd/graph";
 
 export interface FormState<T extends Record<string, unknown>> {
@@ -49,7 +49,10 @@ export interface UseFormReturn<T extends Record<string, unknown>> {
   trigger(name?: string | string[]): Promise<boolean>;
   reset(values?: Partial<T>): void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleSubmit(onValid: (data: T) => void | Promise<void>, onInvalid?: (errors: FormErrors) => void): (e: any) => void;
+  handleSubmit(
+    onValid: (data: T) => void | Promise<void>,
+    onInvalid?: (errors: FormErrors) => void
+  ): (e: any) => void;
   getFieldError(name: string): LoydIssue | undefined;
   getFieldErrors(name: string): LoydIssue[];
   isFieldDirty(name: string): boolean;

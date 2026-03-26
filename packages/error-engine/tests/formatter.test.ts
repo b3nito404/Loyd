@@ -1,6 +1,6 @@
 // packages/error-engine/tests/formatter.test.ts
-import { describe, it, expect } from "vitest";
-import { LoydErrorCode, en, fr, es, ar } from "../src/index.js";
+import { describe, expect, it } from "vitest";
+import { LoydErrorCode, ar, en, es, fr } from "../src/index.js";
 
 describe("LoydErrorCode", () => {
   it("exports all expected codes", () => {

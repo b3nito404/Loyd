@@ -1,4 +1,4 @@
-import type { LoydSchema, LoydResult, AsyncSchema } from "@loyd/core";
+import type { AsyncSchema, LoydResult, LoydSchema } from "@loyd/core";
 
 export interface ParseAsyncOptions {
   // AbortSignal is a DOM/Node global typed loosely here for Phase 0 stub
@@ -16,11 +16,11 @@ export interface AsyncPipelineResult<T> {
 export declare function parseAsync<T>(
   schema: LoydSchema<T> | AsyncSchema<T>,
   input: unknown,
-  options?: ParseAsyncOptions,
+  options?: ParseAsyncOptions
 ): Promise<LoydResult<T>>;
 
 export declare function parseAsyncDetailed<T>(
   schema: LoydSchema<T> | AsyncSchema<T>,
   input: unknown,
-  options?: ParseAsyncOptions,
+  options?: ParseAsyncOptions
 ): Promise<AsyncPipelineResult<T>>;

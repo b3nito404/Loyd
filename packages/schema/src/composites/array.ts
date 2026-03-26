@@ -1,5 +1,5 @@
 import { BaseSchema } from "@loyd/core";
-import type { LoydSchema, LoydResult, LoydIssue } from "@loyd/core";
+import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
 
 export interface ArraySchema<T> extends BaseSchema<T[]> {
   readonly _type: "array";
@@ -19,7 +19,10 @@ class ArraySchemaImpl<T> extends BaseSchema<T[]> implements ArraySchema<T> {
   private readonly _maxMsg: string | undefined;
   private readonly _baseMsg: string | undefined;
 
-  constructor(element: LoydSchema<T>, opts: { min?: number; max?: number; minMsg?: string; maxMsg?: string; baseMsg?: string } = {}) {
+  constructor(
+    element: LoydSchema<T>,
+    opts: { min?: number; max?: number; minMsg?: string; maxMsg?: string; baseMsg?: string } = {}
+  ) {
     super();
     this.element = element;
     this._minLen = opts.min;
@@ -30,11 +33,22 @@ class ArraySchemaImpl<T> extends BaseSchema<T[]> implements ArraySchema<T> {
   }
 
   _validate(input: unknown): LoydResult<T[]> {
-    if (!Array.isArray(input)) return this._fail("ERR_ARRAY_INVALID_TYPE", [], { received: typeof input }, this._baseMsg);
+    if (!Array.isArray(input))
+      return this._fail("ERR_ARRAY_INVALID_TYPE", [], { received: typeof input }, this._baseMsg);
     if (this._minLen !== undefined && input.length < this._minLen)
-      return this._fail("ERR_ARRAY_TOO_SHORT", [], { min: this._minLen, actual: input.length }, this._minMsg);
+      return this._fail(
+        "ERR_ARRAY_TOO_SHORT",
+        [],
+        { min: this._minLen, actual: input.length },
+        this._minMsg
+      );
     if (this._maxLen !== undefined && input.length > this._maxLen)
-      return this._fail("ERR_ARRAY_TOO_LONG", [], { max: this._maxLen, actual: input.length }, this._maxMsg);
+      return this._fail(
+        "ERR_ARRAY_TOO_LONG",
+        [],
+        { max: this._maxLen, actual: input.length },
+        this._maxMsg
+      );
 
     const result: T[] = [];
     const issues: LoydIssue[] = [];
@@ -43,18 +57,35 @@ class ArraySchemaImpl<T> extends BaseSchema<T[]> implements ArraySchema<T> {
       if (r.success) result.push(r.data);
       else for (const iss of r.issues) issues.push({ ...iss, path: [i, ...iss.path] });
     }
-    if (issues.length > 0) return { success: false, data: undefined, issues: issues as [LoydIssue, ...LoydIssue[]] };
+    if (issues.length > 0)
+      return { success: false, data: undefined, issues: issues as [LoydIssue, ...LoydIssue[]] };
     return this._ok(result);
   }
 
   min(length: number, message?: string): ArraySchema<T> {
-    return new ArraySchemaImpl(this.element, { min: length, max: this._maxLen, minMsg: message, maxMsg: this._maxMsg, baseMsg: this._baseMsg });
+    return new ArraySchemaImpl(this.element, {
+      min: length,
+      max: this._maxLen,
+      minMsg: message,
+      maxMsg: this._maxMsg,
+      baseMsg: this._baseMsg,
+    });
   }
   max(length: number, message?: string): ArraySchema<T> {
-    return new ArraySchemaImpl(this.element, { min: this._minLen, max: length, minMsg: this._minMsg, maxMsg: message, baseMsg: this._baseMsg });
+    return new ArraySchemaImpl(this.element, {
+      min: this._minLen,
+      max: length,
+      minMsg: this._minMsg,
+      maxMsg: message,
+      baseMsg: this._baseMsg,
+    });
   }
-  length(exact: number, message?: string): ArraySchema<T> { return this.min(exact, message).max(exact, message); }
-  nonempty(message?: string): ArraySchema<T> { return this.min(1, message ?? "Array must not be empty"); }
+  length(exact: number, message?: string): ArraySchema<T> {
+    return this.min(exact, message).max(exact, message);
+  }
+  nonempty(message?: string): ArraySchema<T> {
+    return this.min(1, message ?? "Array must not be empty");
+  }
 }
 
 export function array<T>(element: LoydSchema<T>, message?: string): ArraySchema<T> {

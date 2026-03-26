@@ -14,12 +14,12 @@ export function shallowClone<T extends Record<string, unknown>>(obj: T): T {
 
 export function deepFreeze<T>(value: T): Readonly<T> {
   if (typeof value !== "object" || value === null) return value;
-  Object.getOwnPropertyNames(value).forEach((name) => {
+  for (const name of Object.getOwnPropertyNames(value)) {
     const child = (value as Record<string, unknown>)[name];
     if (typeof child === "object" && child !== null) {
       deepFreeze(child);
     }
-  });
+  }
   return Object.freeze(value);
 }
 

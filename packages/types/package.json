@@ -2,12 +2,7 @@
   "name": "@loyd/types",
   "version": "0.0.0",
   "description": "Loyd types — zero-runtime TypeScript inference utilities",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "schema"
-  ],
+  "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
   "author": "Loyd contributors",
   "repository": {
@@ -31,10 +26,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",

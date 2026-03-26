@@ -1,15 +1,14 @@
-import type { LoydSchema, LoydResult, AsyncSchema } from "@loyd/core";
+import type { AsyncSchema, LoydResult, LoydSchema } from "@loyd/core";
 import type { ParseAsyncOptions } from "./pipeline.js";
-
 
 export declare function parseAsyncOrThrow<T>(
   schema: LoydSchema<T> | AsyncSchema<T>,
   input: unknown,
-  options?: ParseAsyncOptions,
+  options?: ParseAsyncOptions
 ): Promise<T>;
 
 export declare function safeParseAsync<T>(
   schema: LoydSchema<T> | AsyncSchema<T>,
   input: unknown,
-  options?: ParseAsyncOptions,
+  options?: ParseAsyncOptions
 ): Promise<LoydResult<T>>;

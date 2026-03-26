@@ -14,11 +14,14 @@ export interface CustomRule<T, TMeta extends Record<string, unknown> = Record<st
 
 export function defineRule<T, TMeta extends Record<string, unknown> = Record<string, unknown>>(
   definition: RuleDefinition<TMeta>,
-  predicate: (value: T) => boolean,
+  predicate: (value: T) => boolean
 ): CustomRule<T, TMeta> {
   return {
     definition,
     apply: (schema: LoydSchema<T>) =>
-      refine(schema, predicate, { code: definition.code, meta: definition.params as Record<string, unknown> }),
+      refine(schema, predicate, {
+        code: definition.code,
+        meta: definition.params as Record<string, unknown>,
+      }),
   };
 }

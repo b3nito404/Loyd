@@ -30,7 +30,4 @@ export interface DagBuildOptions {
   dependencies?: Record<string, string[]>;
 }
 
-export declare function buildDag(
-  schema: LoydSchema<unknown>,
-  options?: DagBuildOptions,
-): FieldDag;
+export declare function buildDag(schema: LoydSchema<unknown>, options?: DagBuildOptions): FieldDag;

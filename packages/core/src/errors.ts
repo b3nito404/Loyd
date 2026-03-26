@@ -22,7 +22,10 @@ export class LoydError extends Error {
 
   format(): string {
     return this.issues
-      .map((issue) => `  • ${formatPath(issue.path)}: [${issue.code}]${issue.message ? ` — ${issue.message}` : ""}`)
+      .map(
+        (issue) =>
+          `  • ${formatPath(issue.path)}: [${issue.code}]${issue.message ? ` — ${issue.message}` : ""}`
+      )
       .join("\n");
   }
 }
@@ -31,11 +34,7 @@ function formatPath(path: ReadonlyArray<string | number>): string {
   if (path.length === 0) return "(root)";
   return path
     .map((segment, i) =>
-      typeof segment === "number"
-        ? `[${segment}]`
-        : i === 0
-          ? segment
-          : `.${segment}`
+      typeof segment === "number" ? `[${segment}]` : i === 0 ? segment : `.${segment}`
     )
     .join("");
 }

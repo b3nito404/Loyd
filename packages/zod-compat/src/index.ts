@@ -24,7 +24,7 @@ export declare function fromZod<T>(zodSchema: unknown): LoydSchema<T>;
  * const zodSchema = toZod(UserSchema);
  * // Compatible with react-hook-form resolver Zod
  */
-export declare function toZod<T>(loydSchema: LoydSchema<T>): unknown
+export declare function toZod<T>(loydSchema: LoydSchema<T>): unknown;
 export interface CodemodOptions {
   /**
    * @default false
@@ -63,5 +63,5 @@ export interface CodemodResult {
  */
 export declare function runCodemod(
   directory: string,
-  options?: CodemodOptions,
+  options?: CodemodOptions
 ): Promise<CodemodResult>;

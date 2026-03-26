@@ -23,5 +23,5 @@ export interface EmitResult {
 
 export declare function emit(
   schema: LoydSchema<unknown>,
-  options: EmitOptions,
+  options: EmitOptions
 ): Promise<EmitResult>;

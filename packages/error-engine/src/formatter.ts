@@ -21,7 +21,4 @@ export interface LoydFormatter {
  * const fmt = createFormatter("fr", frMessages);
  * const message = fmt.format(issue);
  */
-export type CreateFormatterFn = (
-  locale: Locale,
-  messages?: Partial<MessageMap>
-) => LoydFormatter;
+export type CreateFormatterFn = (locale: Locale, messages?: Partial<MessageMap>) => LoydFormatter;

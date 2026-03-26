@@ -1,5 +1,4 @@
-import type { LoydSchema, LoydResult } from "@loyd/core";
-
+import type { LoydResult, LoydSchema } from "@loyd/core";
 
 export type CompiledValidatorFn<T> = (input: unknown) => LoydResult<T>;
 
@@ -31,7 +30,7 @@ export interface CompilerOptions {
  */
 export declare function compile<T>(
   schema: LoydSchema<T>,
-  options?: CompilerOptions,
+  options?: CompilerOptions
 ): CompiledValidatorFn<T>;
 
 export declare function invalidateCache(schema: LoydSchema<unknown>): void;

@@ -19,5 +19,5 @@ export interface CodegenOptions {
  */
 export declare function generateCode(
   schema: LoydSchema<unknown>,
-  options?: CodegenOptions,
+  options?: CodegenOptions
 ): CodegenResult;

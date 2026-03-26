@@ -49,7 +49,7 @@ export interface ToJsonSchemaOptions {
  */
 export declare function toJsonSchema(
   schema: LoydSchema<unknown>,
-  options?: ToJsonSchemaOptions,
+  options?: ToJsonSchemaOptions
 ): JsonSchema7;
 
 //OpenAPI
@@ -82,5 +82,5 @@ export interface ToOpenApiOptions extends ToJsonSchemaOptions {
  */
 export declare function toOpenApi(
   schema: LoydSchema<unknown>,
-  options?: ToOpenApiOptions,
+  options?: ToOpenApiOptions
 ): OpenApiSchemaObject;

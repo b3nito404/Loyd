@@ -33,7 +33,7 @@ class StringSchemaImpl extends BaseSchema<string> implements StringSchema {
   constructor(
     private readonly _requiredMessage: string | undefined,
     rules: StringRule[],
-    transforms: Array<(s: string) => string>,
+    transforms: Array<(s: string) => string>
   ) {
     super();
     this._rules = rules;
@@ -42,7 +42,12 @@ class StringSchemaImpl extends BaseSchema<string> implements StringSchema {
 
   _validate(input: unknown): LoydResult<string> {
     if (typeof input !== "string") {
-      return this._fail("ERR_STRING_INVALID_TYPE", [], { expected: "string", received: typeof input }, this._requiredMessage);
+      return this._fail(
+        "ERR_STRING_INVALID_TYPE",
+        [],
+        { expected: "string", received: typeof input },
+        this._requiredMessage
+      );
     }
     let value = input;
     for (const t of this._transforms) value = t(value);
@@ -53,42 +58,120 @@ class StringSchemaImpl extends BaseSchema<string> implements StringSchema {
     return this._ok(value);
   }
 
-  private _clone(newRules?: StringRule[], newTransforms?: Array<(s: string) => string>): StringSchema {
-    return new StringSchemaImpl(this._requiredMessage, newRules ?? [...this._rules], newTransforms ?? [...this._transforms]);
+  private _clone(
+    newRules?: StringRule[],
+    newTransforms?: Array<(s: string) => string>
+  ): StringSchema {
+    return new StringSchemaImpl(
+      this._requiredMessage,
+      newRules ?? [...this._rules],
+      newTransforms ?? [...this._transforms]
+    );
   }
 
   minLength(min: number, message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => v.length < min ? this._fail("ERR_STRING_TOO_SHORT", [], { min, actual: v.length }, message) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) =>
+        v.length < min
+          ? this._fail("ERR_STRING_TOO_SHORT", [], { min, actual: v.length }, message)
+          : null,
+    ]);
   }
   maxLength(max: number, message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => v.length > max ? this._fail("ERR_STRING_TOO_LONG", [], { max, actual: v.length }, message) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) =>
+        v.length > max
+          ? this._fail("ERR_STRING_TOO_LONG", [], { max, actual: v.length }, message)
+          : null,
+    ]);
   }
-  length(exact: number, message?: string): StringSchema { return this.minLength(exact, message).maxLength(exact, message); }
+  length(exact: number, message?: string): StringSchema {
+    return this.minLength(exact, message).maxLength(exact, message);
+  }
   email(message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => !EMAIL_REGEX.test(v) ? this._fail("ERR_STRING_INVALID_EMAIL", [], {}, message) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) =>
+        !EMAIL_REGEX.test(v) ? this._fail("ERR_STRING_INVALID_EMAIL", [], {}, message) : null,
+    ]);
   }
   url(message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => !URL_REGEX.test(v) ? this._fail("ERR_STRING_INVALID_URL", [], {}, message) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) => (!URL_REGEX.test(v) ? this._fail("ERR_STRING_INVALID_URL", [], {}, message) : null),
+    ]);
   }
   uuid(message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => !UUID_REGEX.test(v) ? this._fail("ERR_STRING_INVALID_UUID", [], {}, message) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) => (!UUID_REGEX.test(v) ? this._fail("ERR_STRING_INVALID_UUID", [], {}, message) : null),
+    ]);
   }
   regex(pattern: RegExp, message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => !pattern.test(v) ? this._fail("ERR_STRING_INVALID_REGEX", [], { pattern: pattern.source }, message) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) =>
+        !pattern.test(v)
+          ? this._fail("ERR_STRING_INVALID_REGEX", [], { pattern: pattern.source }, message)
+          : null,
+    ]);
   }
   startsWith(prefix: string, message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => !v.startsWith(prefix) ? this._fail("ERR_STRING_INVALID_REGEX", [], { prefix }, message ?? `Must start with "${prefix}"`) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) =>
+        !v.startsWith(prefix)
+          ? this._fail(
+              "ERR_STRING_INVALID_REGEX",
+              [],
+              { prefix },
+              message ?? `Must start with "${prefix}"`
+            )
+          : null,
+    ]);
   }
   endsWith(suffix: string, message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => !v.endsWith(suffix) ? this._fail("ERR_STRING_INVALID_REGEX", [], { suffix }, message ?? `Must end with "${suffix}"`) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) =>
+        !v.endsWith(suffix)
+          ? this._fail(
+              "ERR_STRING_INVALID_REGEX",
+              [],
+              { suffix },
+              message ?? `Must end with "${suffix}"`
+            )
+          : null,
+    ]);
   }
   includes(substring: string, message?: string): StringSchema {
-    return this._clone([...this._rules, (v) => !v.includes(substring) ? this._fail("ERR_STRING_INVALID_REGEX", [], { substring }, message ?? `Must include "${substring}"`) : null]);
+    return this._clone([
+      ...this._rules,
+      (v) =>
+        !v.includes(substring)
+          ? this._fail(
+              "ERR_STRING_INVALID_REGEX",
+              [],
+              { substring },
+              message ?? `Must include "${substring}"`
+            )
+          : null,
+    ]);
   }
-  nonempty(message?: string): StringSchema { return this.minLength(1, message ?? "Must not be empty"); }
-  trim(): StringSchema { return this._clone(undefined, [...this._transforms, (s) => s.trim()]); }
-  toLowerCase(): StringSchema { return this._clone(undefined, [...this._transforms, (s) => s.toLowerCase()]); }
-  toUpperCase(): StringSchema { return this._clone(undefined, [...this._transforms, (s) => s.toUpperCase()]); }
+  nonempty(message?: string): StringSchema {
+    return this.minLength(1, message ?? "Must not be empty");
+  }
+  trim(): StringSchema {
+    return this._clone(undefined, [...this._transforms, (s) => s.trim()]);
+  }
+  toLowerCase(): StringSchema {
+    return this._clone(undefined, [...this._transforms, (s) => s.toLowerCase()]);
+  }
+  toUpperCase(): StringSchema {
+    return this._clone(undefined, [...this._transforms, (s) => s.toUpperCase()]);
+  }
 }
 
 export function string(message?: string): StringSchema {

@@ -11,11 +11,22 @@ export interface LiteralSchema<T extends Primitive> extends BaseSchema<T> {
 class LiteralSchemaImpl<T extends Primitive> extends BaseSchema<T> implements LiteralSchema<T> {
   readonly _type = "literal" as const;
   readonly value: T;
-  constructor(value: T, private readonly _msg: string | undefined) { super(); this.value = value; }
+  constructor(
+    value: T,
+    private readonly _msg: string | undefined
+  ) {
+    super();
+    this.value = value;
+  }
 
   _validate(input: unknown): LoydResult<T> {
     if (input !== this.value) {
-      return this._fail("ERR_LITERAL_INVALID", [], { expected: this.value, actual: input }, this._msg);
+      return this._fail(
+        "ERR_LITERAL_INVALID",
+        [],
+        { expected: this.value, actual: input },
+        this._msg
+      );
     }
     return this._ok(input as T);
   }

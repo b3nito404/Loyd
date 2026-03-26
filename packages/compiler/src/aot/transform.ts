@@ -3,7 +3,7 @@
  * import { object, string, number } from "@loyd/schema";
  * const UserSchema = object({ name: string(), age: number() });
  *
- * (compilé AOT)
+ * (compiled  AOT)
  * import { __compiled_abc123 as UserSchema } from "./__loyd_compiled__/UserSchema.js";
  */
 export interface AotTransformOptions {
@@ -22,5 +22,5 @@ export interface AotTransformResult {
 export type AotTransformFn = (
   source: string,
   filename: string,
-  options?: AotTransformOptions,
+  options?: AotTransformOptions
 ) => AotTransformResult | null;

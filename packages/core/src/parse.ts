@@ -23,9 +23,7 @@ export function failOne<T>(issue: LoydIssue): LoydResult<T> {
   return fail([issue]);
 }
 
-export function isOk<T>(
-  result: LoydResult<T>
-): result is { success: true; data: T; issues: [] } {
+export function isOk<T>(result: LoydResult<T>): result is { success: true; data: T; issues: [] } {
   return result.success;
 }
 

@@ -1,6 +1,6 @@
 import { BaseSchema } from "@loyd/core";
-import type { LoydSchema, LoydResult, LoydIssue } from "@loyd/core";
-import type { SchemaMap, InferSchemaMap, InferSchemaMapInput } from "@loyd/types";
+import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
+import type { InferSchemaMap, InferSchemaMapInput, SchemaMap } from "@loyd/types";
 
 export type ObjectUnknownKeys = "strip" | "strict" | "passthrough";
 
@@ -92,7 +92,6 @@ class ObjectSchemaImpl<TShape extends SchemaMap>
     return this._ok(result as InferSchemaMap<TShape>);
   }
 
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   partial(): ObjectSchema<any> {
     const newShape: Record<string, LoydSchema<unknown>> = {};
@@ -135,7 +134,7 @@ class ObjectSchemaImpl<TShape extends SchemaMap>
   merge(other: ObjectSchema<any>): ObjectSchema<any> {
     return new ObjectSchemaImpl(
       { ...this.shape, ...(other as ObjectSchemaImpl<SchemaMap>).shape },
-      this._unknownKeys,
+      this._unknownKeys
     );
   }
 

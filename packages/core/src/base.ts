@@ -2,9 +2,7 @@ import { LoydError } from "./errors.js";
 import { ok } from "./parse.js";
 import type { LoydResult, LoydSchema, SchemaMeta } from "./types.js";
 
-export abstract class BaseSchema<TOutput, TInput = TOutput>
-  implements LoydSchema<TOutput, TInput>
-{
+export abstract class BaseSchema<TOutput, TInput = TOutput> implements LoydSchema<TOutput, TInput> {
   declare readonly _output: TOutput;
   declare readonly _input: TInput;
 
@@ -61,7 +59,7 @@ export abstract class BaseSchema<TOutput, TInput = TOutput>
     code: string,
     path: Array<string | number> = [],
     meta?: Record<string, unknown>,
-    message?: string,
+    message?: string
   ): LoydResult<TOutput> {
     return {
       success: false,
