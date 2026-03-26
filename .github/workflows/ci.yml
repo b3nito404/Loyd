@@ -15,7 +15,6 @@ env:
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
-  # ── Lint & Format ────────────────────────────────────────────────────────────
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
@@ -23,8 +22,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -37,7 +34,6 @@ jobs:
       - name: Run Biome
         run: pnpm biome ci .
 
-  # ── TypeScript ───────────────────────────────────────────────────────────────
   typecheck:
     name: TypeScript
     runs-on: ubuntu-latest
@@ -45,8 +41,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -62,7 +56,6 @@ jobs:
       - name: Typecheck all packages
         run: pnpm typecheck
 
-  # ── Tests ────────────────────────────────────────────────────────────────────
   test:
     name: Tests (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
@@ -74,8 +67,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -98,7 +89,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: node${{ matrix.node }}
 
-  # ── Bundle size ──────────────────────────────────────────────────────────────
   bundle-size:
     name: Bundle size check
     runs-on: ubuntu-latest
@@ -106,8 +96,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -123,7 +111,6 @@ jobs:
       - name: Check bundle sizes
         run: pnpm --filter @loyd/schema exec node ../../scripts/check-bundle-size.mjs
 
-  # ── Status check ─────────────────────────────────────────────────────────────
   ci-success:
     name: CI passed
     needs: [lint, typecheck, test, bundle-size]
