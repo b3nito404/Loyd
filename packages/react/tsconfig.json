@@ -7,11 +7,10 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "composite": false,
     "jsx": "react-jsx",
-    "jsxImportSource": "react"
+    "jsxImportSource": "react",
+    "lib": ["ES2022", "DOM"]
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "references": [
     {
       "path": "../core"

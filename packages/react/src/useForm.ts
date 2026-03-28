@@ -1,6 +1,7 @@
-import type { LoydSchema, LoydIssue } from "@loyd/core";
 import type { ParseAsyncOptions } from "@loyd/async";
+import type { LoydIssue, LoydSchema } from "@loyd/core";
 import type { DagBuildOptions } from "@loyd/graph";
+import type { ChangeEvent, FocusEvent, FormEvent } from "react";
 
 export interface FormState<T extends Record<string, unknown>> {
   values: T;
@@ -29,9 +30,9 @@ export interface UseFormOptions<T extends Record<string, unknown>> {
 
 export interface RegisterReturn {
   name: string;
-  ref: (el: any) => void;
-  onChange: (e: any) => void;
-  onBlur: (e: any) => void;
+  ref: (el: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  onBlur: (e: FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 export interface SetValueOptions {
@@ -48,8 +49,10 @@ export interface UseFormReturn<T extends Record<string, unknown>> {
   setTouched(name: string, touched?: boolean): void;
   trigger(name?: string | string[]): Promise<boolean>;
   reset(values?: Partial<T>): void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleSubmit(onValid: (data: T) => void | Promise<void>, onInvalid?: (errors: FormErrors) => void): (e: any) => void;
+  handleSubmit(
+    onValid: (data: T) => void | Promise<void>,
+    onInvalid?: (errors: FormErrors) => void,
+  ): (e: FormEvent<HTMLFormElement>) => void;
   getFieldError(name: string): LoydIssue | undefined;
   getFieldErrors(name: string): LoydIssue[];
   isFieldDirty(name: string): boolean;
@@ -57,5 +60,5 @@ export interface UseFormReturn<T extends Record<string, unknown>> {
 }
 
 export declare function useForm<T extends Record<string, unknown>>(
-  options: UseFormOptions<T>
+  options: UseFormOptions<T>,
 ): UseFormReturn<T>;

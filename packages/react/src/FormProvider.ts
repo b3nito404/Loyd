@@ -6,7 +6,7 @@ export interface FormProviderProps<T extends Record<string, unknown>> {
 }
 
 export declare function FormProvider<T extends Record<string, unknown>>(
-  props: FormProviderProps<T>
+  props: FormProviderProps<T>,
 ): unknown;
 
 export declare function useFormContext<T extends Record<string, unknown>>(): UseFormReturn<T>;

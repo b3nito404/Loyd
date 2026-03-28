@@ -1,4 +1,5 @@
 import type { LoydIssue } from "@loyd/core";
+import type { ChangeEvent, FocusEvent } from "react";
 
 export interface FieldState<T = unknown> {
   value: T;
@@ -18,10 +19,8 @@ export interface UseFieldReturn<T = unknown> {
   reset(): void;
   inputProps: {
     value: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onChange: (e: any) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onBlur: (e: any) => void;
+    onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+    onBlur: (e: FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
     name: string;
     "aria-invalid": boolean;
     "aria-describedby": string | undefined;

@@ -1,4 +1,2 @@
-export type { FormState, FormErrors, UseFormOptions, UseFormReturn, RegisterReturn, SetValueOptions } from "./useForm.js";
-export type { FieldState, UseFieldReturn } from "./useField.js";
-export type { FieldArrayItem, UseFieldArrayReturn } from "./useFieldArray.js";
-export type { FormProviderProps } from "./FormProvider.js";
+import type { LoydIssue } from "@loyd/core";
+export type FormErrors = Record<string, LoydIssue[]>;
