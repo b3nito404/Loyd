@@ -28,7 +28,7 @@ class TupleSchemaImpl<T extends unknown[]> extends BaseSchema<T> implements Tupl
     const result: unknown[] = [];
     const issues: LoydIssue[] = [];
     for (let i = 0; i < this._items.length; i++) {
-      const r = this._items[i]!.safeParse(input[i]);
+      const r = this._items[i]?.safeParse(input[i]);
       if (r.success) result.push(r.data);
       else for (const iss of r.issues) issues.push({ ...iss, path: [i, ...iss.path] });
     }
@@ -62,7 +62,7 @@ class TupleWithRestSchemaImpl<T extends unknown[], R> extends BaseSchema<[...T, 
     const result: unknown[] = [];
     const issues: LoydIssue[] = [];
     for (let i = 0; i < this._items.length; i++) {
-      const r = this._items[i]!.safeParse(input[i]);
+      const r = this._items[i]?.safeParse(input[i]);
       if (r.success) result.push(r.data);
       else for (const iss of r.issues) issues.push({ ...iss, path: [i, ...iss.path] });
     }

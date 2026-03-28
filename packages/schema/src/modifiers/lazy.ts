@@ -13,7 +13,9 @@ class LazySchemaImpl<T> extends BaseSchema<T> implements LazySchema<T> {
     super();
   }
   resolve(): LoydSchema<T> {
-    if (this._resolved === undefined) { this._resolved = this._factory(); }
+    if (this._resolved === undefined) {
+      this._resolved = this._factory();
+    }
     return this._resolved;
   }
   _validate(input: unknown): LoydResult<T> {
