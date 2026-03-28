@@ -1,4 +1,6 @@
-//@loyd/core publiv API
+// packages/core/src/index.ts
+// API publique de @loyd/core
+
 export type {
   LoydResult,
   LoydIssue,

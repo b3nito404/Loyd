@@ -1,21 +1,36 @@
+// packages/core/src/base.ts
+// Classe de base concrète dont héritent tous les schémas Loyd.
+// Elle implémente parse(), safeParse(), parseOrThrow(), meta(), describe()
+// pour éviter la duplication dans chaque schéma.
+
 import { LoydError } from "./errors.js";
 import { ok } from "./parse.js";
 import type { LoydResult, LoydSchema, SchemaMeta } from "./types.js";
 
 export abstract class BaseSchema<TOutput, TInput = TOutput> implements LoydSchema<TOutput, TInput> {
+  // Marques de type TypeScript — jamais accédées à l'exécution
   declare readonly _output: TOutput;
   declare readonly _input: TInput;
 
   abstract readonly _type: string;
+
   readonly _meta: SchemaMeta = {};
 
+  // ── Méthode centrale à implémenter par chaque schéma ─────────────────────
+
+  /**
+   * Exécute la validation sur `input` et retourne un LoydResult.
+   * C'est la seule méthode obligatoire à implémenter dans les sous-classes.
+   */
   abstract _validate(input: unknown): LoydResult<TOutput>;
 
-  //Public API
+  // ── API publique ──────────────────────────────────────────────────────────
+
   safeParse(input: unknown): LoydResult<TOutput> {
     try {
       return this._validate(input);
     } catch (err) {
+      // Isole les exceptions inattendues dans une issue générique
       return {
         success: false,
         data: undefined,
@@ -45,11 +60,14 @@ export abstract class BaseSchema<TOutput, TInput = TOutput> implements LoydSchem
   }
 
   describe(description: string): this {
+    // Retourne une nouvelle instance pour préserver l'immutabilité
     const clone = Object.create(Object.getPrototypeOf(this) as object) as this;
     Object.assign(clone, this);
     (clone as { _meta: SchemaMeta })._meta = { ...this._meta, description };
     return clone;
   }
+
+  // ── Helpers internes réutilisables ────────────────────────────────────────
 
   protected _ok(data: TOutput): LoydResult<TOutput> {
     return ok(data);
@@ -75,6 +93,8 @@ export abstract class BaseSchema<TOutput, TInput = TOutput> implements LoydSchem
     });
   }
 }
+
+// ── Utilitaire ────────────────────────────────────────────────────────────────
 
 export function getTypeName(value: unknown): string {
   if (value === null) return "null";

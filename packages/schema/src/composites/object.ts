@@ -1,3 +1,4 @@
+// packages/schema/src/composites/object.ts
 import { BaseSchema } from "@loyd/core";
 import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
 import type { InferSchemaMap, InferSchemaMapInput, SchemaMap } from "@loyd/types";
@@ -92,6 +93,8 @@ class ObjectSchemaImpl<TShape extends SchemaMap>
     return this._ok(result as InferSchemaMap<TShape>);
   }
 
+  // ── Builders ──────────────────────────────────────────────────────────────
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   partial(): ObjectSchema<any> {
     const newShape: Record<string, LoydSchema<unknown>> = {};
@@ -151,6 +154,8 @@ class ObjectSchemaImpl<TShape extends SchemaMap>
     return new ObjectSchemaImpl(this.shape, "passthrough");
   }
 }
+
+// ── Wrapper optional interne ──────────────────────────────────────────────────
 
 function wrapOptional<T>(schema: LoydSchema<T>): LoydSchema<T | undefined> {
   return {
