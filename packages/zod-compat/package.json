@@ -1,20 +1,9 @@
 {
   "name": "@loyd/zod-compat",
   "version": "0.0.0",
-  "description": "Loyd zod-compat — bidirectional Zod interop and codemod",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "schema"
-  ],
+  "description": "Loyd zod-compat — Zod migration tools",
+  "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
-  "author": "Loyd contributors",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-org/loyd.git",
-    "directory": "packages/zod-compat"
-  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -31,10 +20,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
@@ -53,6 +39,7 @@
     "zod": ">=3.0.0"
   },
   "devDependencies": {
+    "@loyd/schema": "workspace:*",
     "zod": "^3.23.8",
     "typescript": "^5.7.2",
     "tsup": "^8.3.5",
