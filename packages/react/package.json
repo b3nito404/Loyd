@@ -2,12 +2,7 @@
   "name": "@loyd/react",
   "version": "0.0.0",
   "description": "Loyd react — native React hooks",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "schema"
-  ],
+  "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -25,10 +20,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup && pnpm build:types",
