@@ -1,19 +1,11 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
   "include": ["src/**/*"],
-  "references": [
-    {
-      "path": "../core"
-    },
-    {
-      "path": "../compiler"
-    }
-  ]
+  "exclude": ["node_modules", "dist", "tests"],
+  "references": [{ "path": "../core" }, { "path": "../compiler" }]
 }
