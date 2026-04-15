@@ -1,16 +1,10 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from 'tsup';
+
 export default defineConfig({
-  entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
-  dts: true,
-  splitting: false,
+  entry: ['src/index.ts'],
+  format: ['esm', 'cjs'],
+  dts: false,
   sourcemap: true,
   clean: true,
-  treeshake: true,
-  minify: false,
-  external: ["react", "react-dom"],
-  esbuildOptions(options) {
-    options.jsx = "automatic";
-    options.jsxImportSource = "react";
-  },
+  target: 'es2022',
 });

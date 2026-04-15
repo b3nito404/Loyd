@@ -2,7 +2,12 @@
   "name": "@loyd/graph",
   "version": "0.0.0",
   "description": "Loyd graph — field dependency DAG",
-  "keywords": ["loyd", "validation", "typescript", "schema"],
+  "keywords": [
+    "loyd",
+    "validation",
+    "typescript",
+    "schema"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -20,16 +25,20 @@
       }
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && pnpm build:types",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "bench": "echo no benchmarks",
-    "clean": "rm -rf dist *.tsbuildinfo"
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap"
   },
   "dependencies": {
     "@loyd/core": "workspace:*",

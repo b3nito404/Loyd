@@ -1,19 +1,28 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "tsconfig.json", "tsup.config.ts", "package.json"],
       "outputs": ["dist/**"]
     },
-    "typecheck": { "dependsOn": ["^build"], "inputs": ["src/**", "tsconfig.json"], "outputs": [] },
+    "build:types": {
+      "dependsOn": ["^build:types"],
+      "outputs": ["dist/**"]
+    },
     "test": {
-      "dependsOn": ["^build"],
-      "inputs": ["src/**", "tests/**", "vitest.config.ts"],
+      "dependsOn": ["build"],
       "outputs": []
     },
-    "bench": { "dependsOn": ["build"], "cache": false, "outputs": [] },
-    "clean": { "cache": false }
+    "typecheck": {
+      "dependsOn": ["^build:types"],
+      "outputs": []
+    },
+    "bench": {
+      "cache": false,
+      "dependsOn": ["build"]
+    },
+    "clean": {
+      "cache": false
+    }
   }
 }
