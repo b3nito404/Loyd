@@ -98,8 +98,6 @@ function convertZod(zs: ZodAny): LoydSchema<unknown> {
   }
 }
 
-
-
 function convertZodString(zs: ZodAny): LoydSchema<string> {
   let schema = string();
 
@@ -119,7 +117,6 @@ function convertZodString(zs: ZodAny): LoydSchema<string> {
 
   return schema;
 }
-
 
 function convertZodNumber(zs: ZodAny): LoydSchema<number> {
   let schema = number();
@@ -143,8 +140,6 @@ function convertZodNumber(zs: ZodAny): LoydSchema<number> {
   return schema;
 }
 
-
-
 function convertZodObject(zs: ZodAny): LoydSchema<unknown> {
   const shape: Record<string, LoydSchema<unknown>> = {};
 
@@ -164,7 +159,6 @@ function convertZodObject(zs: ZodAny): LoydSchema<unknown> {
   return schema;
 }
 
-
 function convertZodArray(zs: ZodAny): LoydSchema<unknown> {
   let schema = array(asBase(convertZod(zs._def.type)));
 
@@ -179,12 +173,10 @@ function convertZodArray(zs: ZodAny): LoydSchema<unknown> {
   return schema;
 }
 
-
 function convertZodTuple(zs: ZodAny): LoydSchema<unknown> {
   const items = zs._def.items.map((i: ZodAny) => asBase(convertZod(i)));
   return tuple(items);
 }
-
 
 type CompatIssue = {
   code: string;

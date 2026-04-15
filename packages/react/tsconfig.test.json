@@ -5,8 +5,5 @@
     "composite": false,
     "incremental": false
   },
-  "include": [
-    "src/**/*",
-    "tests/**/*"
-  ]
+  "include": ["src/**/*", "tests/**/*"]
 }
