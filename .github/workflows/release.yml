@@ -30,7 +30,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
 
-      - uses: changesets/action@v1
+      - name: Create Release Pull Request or Publish
+        uses: changesets/action@v1
         with:
           publish: pnpm release
           title: "chore: release packages"
