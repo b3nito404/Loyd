@@ -1,6 +1,6 @@
 {
   "name": "@loydjs/error-engine",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Loyd error-engine — structured i18n error codes",
   "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",

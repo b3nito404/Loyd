@@ -1,6 +1,6 @@
 {
   "name": "@loydjs/zod-compat",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Loyd zod-compat — Zod migration tools",
   "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",

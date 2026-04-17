@@ -1,6 +1,6 @@
 {
   "name": "@loydjs/graph",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Loyd graph — field dependency DAG",
   "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",

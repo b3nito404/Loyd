@@ -1,6 +1,6 @@
 {
   "name": "@loydjs/runtime",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Loyd runtime — zero-copy execution engine",
   "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",

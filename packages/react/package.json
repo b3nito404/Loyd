@@ -1,6 +1,6 @@
 {
   "name": "@loydjs/react",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Loyd react — native React hooks",
   "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",

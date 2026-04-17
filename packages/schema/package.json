@@ -1,6 +1,6 @@
 {
   "name": "@loydjs/schema",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Loyd schema — functional, tree-shakeable DSL",
   "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",

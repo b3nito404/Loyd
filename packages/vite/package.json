@@ -1,6 +1,6 @@
 {
   "name": "@loydjs/vite",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Loyd vite — Vite/Rollup AOT plugin",
   "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",

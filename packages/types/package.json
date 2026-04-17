@@ -1,6 +1,6 @@
 {
   "name": "@loydjs/types",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Loyd types — zero-runtime inference",
   "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
