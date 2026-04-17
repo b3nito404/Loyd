@@ -18,7 +18,9 @@ export function toZod<T>(loydSchema: LoydSchema<T>): ZodAny {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     z = require("zod");
   } catch {
-    throw new Error("@loydjs/zod-compat: toZod() requires 'zod' to be installed. Run: pnpm add zod");
+    throw new Error(
+      "@loydjs/zod-compat: toZod() requires 'zod' to be installed. Run: pnpm add zod",
+    );
   }
   return convertLoyd(loydSchema, z);
 }
