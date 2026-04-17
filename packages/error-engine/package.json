@@ -20,7 +20,7 @@
       }
     }
   },
-  "files": ["dist", "src"],
+  "files": ["README.md", "dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
