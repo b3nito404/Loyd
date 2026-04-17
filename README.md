@@ -3,11 +3,11 @@
 <h1>Loyd</h1>
 
 
-**TypeScript-first schema validation with static type inference**
+**High-performance, tree-shakable schema validation for TypeScript.**
 
-[![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/your-org/loyd/actions)
+[![CI](https://github.com/b3nito404/loyd/actions/workflows/ci.yml/badge.svg)](https://github.com/b3nito404/loyd/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Bundle](https://img.shields.io/badge/bundle-0.8kb-brightgreen.svg)](https://bundlephobia.com/package/@loyd/schema)
+[![Bundle](https://img.shields.io/badge/bundle-0.8kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/schema)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue.svg)](https://www.typescriptlang.org)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/b3nito404/loyd/releases)
 
@@ -30,19 +30,18 @@
 
 ```sh
 # Core  start here
-npm install @loyd/schema @loyd/core @loyd/types
+npm install @loydjs/schema @loydjs/core @loydjs/types
 
 # Optional packages
-npm install @loyd/async          # two-pass async pipeline
-npm install @loyd/compiler       # JIT compilation
-npm install @loyd/error-engine   # structured i18n
-npm install @loyd/react          # React hooks (requires @loyd/graph)
-npm install @loyd/graph          # field dependency DAG
-npm install @loyd/zod-compat     # Zod migration utilities
-npm install @loyd/openapi        # OpenAPI 3.1 / JSON Schema export
-npm install @loyd/vite           # Vite / Rollup AOT plugin
+npm install @loydjs/async          # two-pass async pipeline
+npm install @loydjs/compiler       # JIT compilation
+npm install @loydjs/error-engine   # structured i18n
+npm install @loydjs/react          # React hooks (requires @loydjs/graph)
+npm install @loydjs/graph          # field dependency DAG
+npm install @loydjs/zod-compat     # Zod migration utilities
+npm install @loydjs/openapi        # OpenAPI 3.1 / JSON Schema export
+npm install @loydjs/vite           # Vite / Rollup AOT plugin
 ```
-
 > **Requires** Node.js ≥ 20, TypeScript ≥ 5.4, and `"strict": true` in your `tsconfig.json`.
 
 ---
@@ -50,9 +49,9 @@ npm install @loyd/vite           # Vite / Rollup AOT plugin
 ## Quick start
 
 ```ts
-import { object, pipe, string, number, email, minLength } from "@loyd/schema";
-import { parse, safeParse } from "@loyd/core";
-import type { Infer } from "@loyd/types";
+import { object, pipe, string, number, email, minLength } from "@loydjs/schema";
+import { parse, safeParse } from "@loydjs/core";
+import type { Infer } from "@loydjs/types";
 
 // 1. Define your schema
 const UserSchema = object({
@@ -84,7 +83,7 @@ if (result.success) {
 ### React forms
 
 ```tsx
-import { useForm } from "@loyd/react";
+import { useForm } from "@loydjs/react";
 
 function LoginForm() {
   const { register, handleSubmit, state } = useForm({
@@ -106,7 +105,7 @@ function LoginForm() {
 ### JIT compilation
 
 ```ts
-import { compile } from "@loyd/compiler";
+import { compile } from "@loydjs/compiler";
 
 const validate = compile(UserSchema);
 
@@ -117,7 +116,7 @@ const result = validate(input); // LoydResult<User>
 ### i18n error formatting
 
 ```ts
-import { configureFormatter, fr } from "@loyd/error-engine";
+import { configureFormatter, fr } from "@loydjs/error-engine";
 
 // Call once at app startup
 configureFormatter("fr", fr);
@@ -130,7 +129,7 @@ const result = safeParse(UserSchema, badInput);
 ### Migrate from Zod
 
 ```ts
-import { fromZod, runCodemod } from "@loyd/zod-compat";
+import { fromZod, runCodemod } from "@loydjs/zod-compat";
 
 // Convert a single schema
 const LoydUser = fromZod(zodUserSchema);
@@ -145,17 +144,17 @@ await runCodemod("./src", { write: true, verbose: true });
 
 | Package | Description | Size |
 |---|---|---|
-| `@loyd/core` | `parse`, `safeParse`, `LoydError`, `BaseSchema` | 3.9 kb |
-| `@loyd/schema` | All primitives, composites, modifiers, refinements | tree-shakeable |
-| `@loyd/types` | `Infer<>`, `InferInput<>`, `InferOutput<>` | 0 kb runtime |
-| `@loyd/async` | `parseAsync`, two-pass pipeline, `AbortSignal` | ~2 kb |
-| `@loyd/compiler` | `compile()`, JIT codegen, cache management | ~4 kb |
-| `@loyd/error-engine` | `createFormatter`, en/fr/es/ar locales | ~3 kb |
-| `@loyd/graph` | `buildDag`, `validateIncremental`, dirty tracking | ~3 kb |
-| `@loyd/react` | `useForm`, `useField`, `useFieldArray`, `FormProvider` | ~8 kb |
-| `@loyd/zod-compat` | `fromZod`, `toZod`, `runCodemod` | ~5 kb |
-| `@loyd/openapi` | `toOpenApi`, `toJsonSchema`, `toOpenApiComponents` | ~4 kb |
-| `@loyd/vite` | `loydPlugin()` - Vite/Rollup AOT compilation | ~2 kb |
+| `@loydjs/core` | `parse`, `safeParse`, `LoydError`, `BaseSchema` | 3.9 kb |
+| `@loydjs/schema` | All primitives, composites, modifiers, refinements | tree-shakeable |
+| `@loydjs/types` | `Infer<>`, `InferInput<>`, `InferOutput<>` | 0 kb runtime |
+| `@loydjs/async` | `parseAsync`, two-pass pipeline, `AbortSignal` | ~2 kb |
+| `@loydjs/compiler` | `compile()`, JIT codegen, cache management | ~4 kb |
+| `@loydjs/error-engine` | `createFormatter`, en/fr/es/ar locales | ~3 kb |
+| `@loydjs/graph` | `buildDag`, `validateIncremental`, dirty tracking | ~3 kb |
+| `@loydjs/react` | `useForm`, `useField`, `useFieldArray`, `FormProvider` | ~8 kb |
+| `@loydjs/zod-compat` | `fromZod`, `toZod`, `runCodemod` | ~5 kb |
+| `@loydjs/openapi` | `toOpenApi`, `toJsonSchema`, `toOpenApiComponents` | ~4 kb |
+| `@loydjs/vite` | `loydPlugin()` - Vite/Rollup AOT compilation | ~2 kb |
 
 ---
 
@@ -163,7 +162,7 @@ await runCodemod("./src", { write: true, verbose: true });
 
 For the full API reference, guides, and examples, visit the official documentation:
 
-**[https://loyd.dev/docs](https://loyddev-psi.vercel.app)**
+**[https://loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
 
 ---
 
