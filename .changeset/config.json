@@ -4,14 +4,14 @@
   "commit": false,
   "linked": [
     [
-      "@loyd/core",
-      "@loyd/schema",
-      "@loyd/types",
-      "@loyd/compiler",
-      "@loyd/error-engine",
-      "@loyd/async",
-      "@loyd/runtime",
-      "@loyd/graph"
+      "@loydjs/core",
+      "@loydjs/schema",
+      "@loydjs/types",
+      "@loydjs/compiler",
+      "@loydjs/error-engine",
+      "@loydjs/async",
+      "@loydjs/runtime",
+      "@loydjs/graph"
     ]
   ],
   "access": "public",
