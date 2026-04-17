@@ -1,5 +1,5 @@
-import type { LoydSchema } from "@loyd/core";
-import type { BaseSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
+import type { BaseSchema } from "@loydjs/core";
 import {
   array,
   boolean,
@@ -16,7 +16,7 @@ import {
   transform,
   tuple,
   union,
-} from "@loyd/schema";
+} from "@loydjs/schema";
 
 type ZodAny = any;
 

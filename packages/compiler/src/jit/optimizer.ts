@@ -1,4 +1,4 @@
-import type { LoydSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
 export interface OptimizerResult {
   schema: LoydSchema<unknown>;
   appliedOptimizations: string[];

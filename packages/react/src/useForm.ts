@@ -1,6 +1,6 @@
-import type { ParseAsyncOptions } from "@loyd/async";
-import type { LoydIssue, LoydSchema } from "@loyd/core";
-import type { DagBuildOptions } from "@loyd/graph";
+import type { ParseAsyncOptions } from "@loydjs/async";
+import type { LoydIssue, LoydSchema } from "@loydjs/core";
+import type { DagBuildOptions } from "@loydjs/graph";
 import type { ChangeEvent, FocusEvent, FormEvent } from "react";
 
 export interface FormState<T extends Record<string, unknown>> {

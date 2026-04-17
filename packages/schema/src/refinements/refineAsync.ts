@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult, LoydSchema } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult, LoydSchema } from "@loydjs/core";
 import type { RefineOptions } from "./refine.js";
 class RefineAsyncSchema<T> extends BaseSchema<T> {
   readonly _type = "refineAsync" as const;

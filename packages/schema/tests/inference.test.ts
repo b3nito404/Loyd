@@ -1,4 +1,4 @@
-import type { Infer, InferInput, InferOutput } from "@loyd/types";
+import type { Infer, InferInput, InferOutput } from "@loydjs/types";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   array,

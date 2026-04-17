@@ -1,4 +1,4 @@
-import type { LoydIssue } from "@loyd/core";
+import type { LoydIssue } from "@loydjs/core";
 import type { LoydErrorCode } from "./codes.js";
 export type Locale = string;
 export type MessageMap = {

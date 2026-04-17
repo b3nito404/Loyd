@@ -32,13 +32,13 @@ importers:
 
   packages/async:
     dependencies:
-      '@loyd/compiler':
+      '@loydjs/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
-      '@loyd/schema':
+      '@loydjs/schema':
         specifier: workspace:*
         version: link:../schema
     devDependencies:
@@ -54,13 +54,13 @@ importers:
 
   packages/compiler:
     dependencies:
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
-      '@loyd/error-engine':
+      '@loydjs/error-engine':
         specifier: workspace:*
         version: link:../error-engine
-      '@loyd/schema':
+      '@loydjs/schema':
         specifier: workspace:*
         version: link:../schema
     devDependencies:
@@ -88,11 +88,11 @@ importers:
 
   packages/error-engine:
     dependencies:
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      '@loyd/schema':
+      '@loydjs/schema':
         specifier: workspace:*
         version: link:../schema
       tsup:
@@ -107,13 +107,13 @@ importers:
 
   packages/graph:
     dependencies:
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
-      '@loyd/runtime':
+      '@loydjs/runtime':
         specifier: workspace:*
         version: link:../runtime
-      '@loyd/schema':
+      '@loydjs/schema':
         specifier: workspace:*
         version: link:../schema
     devDependencies:
@@ -129,10 +129,10 @@ importers:
 
   packages/openapi:
     dependencies:
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
-      '@loyd/schema':
+      '@loydjs/schema':
         specifier: workspace:*
         version: link:../schema
     devDependencies:
@@ -148,22 +148,22 @@ importers:
 
   packages/react:
     dependencies:
-      '@loyd/async':
+      '@loydjs/async':
         specifier: workspace:*
         version: link:../async
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
-      '@loyd/error-engine':
+      '@loydjs/error-engine':
         specifier: workspace:*
         version: link:../error-engine
-      '@loyd/graph':
+      '@loydjs/graph':
         specifier: workspace:*
         version: link:../graph
-      '@loyd/runtime':
+      '@loydjs/runtime':
         specifier: workspace:*
         version: link:../runtime
-      '@loyd/schema':
+      '@loydjs/schema':
         specifier: workspace:*
         version: link:../schema
     devDependencies:
@@ -200,10 +200,10 @@ importers:
 
   packages/runtime:
     dependencies:
-      '@loyd/compiler':
+      '@loydjs/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -219,10 +219,10 @@ importers:
 
   packages/schema:
     dependencies:
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
-      '@loyd/types':
+      '@loydjs/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:
@@ -238,7 +238,7 @@ importers:
 
   packages/types:
     dependencies:
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -254,10 +254,10 @@ importers:
 
   packages/vite:
     dependencies:
-      '@loyd/compiler':
+      '@loydjs/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -276,10 +276,10 @@ importers:
 
   packages/zod-compat:
     dependencies:
-      '@loyd/core':
+      '@loydjs/core':
         specifier: workspace:*
         version: link:../core
-      '@loyd/schema':
+      '@loydjs/schema':
         specifier: workspace:*
         version: link:../schema
     devDependencies:

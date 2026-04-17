@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult } from "@loydjs/core";
 export interface TransformedSchema<TOut, TIn> extends BaseSchema<TOut, TIn> {
   readonly _type: "transform";
   readonly _inner: BaseSchema<TIn>;

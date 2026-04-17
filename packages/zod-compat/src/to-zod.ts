@@ -1,5 +1,5 @@
 // packages/zod-compat/src/to-zod.ts
-import type { LoydSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
 
 // biome-ignore lint/suspicious/noExplicitAny: Zod has no public TypeScript API we can depend on
 type ZodAny = any;
@@ -9,7 +9,7 @@ type ZodAny = any;
  * Requires 'zod' to be installed as a peer dependency.
  *
  * @example
- * import { toZod } from "@loyd/zod-compat";
+ * import { toZod } from "@loydjs/zod-compat";
  * const zodSchema = toZod(UserSchema);
  */
 export function toZod<T>(loydSchema: LoydSchema<T>): ZodAny {
@@ -18,7 +18,7 @@ export function toZod<T>(loydSchema: LoydSchema<T>): ZodAny {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     z = require("zod");
   } catch {
-    throw new Error("@loyd/zod-compat: toZod() requires 'zod' to be installed. Run: pnpm add zod");
+    throw new Error("@loydjs/zod-compat: toZod() requires 'zod' to be installed. Run: pnpm add zod");
   }
   return convertLoyd(loydSchema, z);
 }

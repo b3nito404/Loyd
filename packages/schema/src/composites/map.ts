@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydIssue, LoydResult, LoydSchema } from "@loydjs/core";
 export interface MapSchema<K, V> extends BaseSchema<Map<K, V>> {
   readonly _type: "map";
 }

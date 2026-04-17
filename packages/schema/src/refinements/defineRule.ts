@@ -1,4 +1,4 @@
-import type { LoydSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
 import { refine } from "./refine.js";
 export interface RuleDefinition<TMeta extends Record<string, unknown> = Record<string, unknown>> {
   code: string;

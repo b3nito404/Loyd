@@ -13,7 +13,7 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
     configResolved(config: { command: string; mode: string }) {
       if (verbose)
         console.log(
-          `[@loyd/vite] ${enabled ? "enabled" : "disabled"} — ${config.command === "build" ? "production (AOT)" : "development (JIT)"}`,
+          `[@loydjs/vite] ${enabled ? "enabled" : "disabled"} — ${config.command === "build" ? "production (AOT)" : "development (JIT)"}`,
         );
     },
     transform(code: string, id: string): { code: string; map?: string } | null {
@@ -27,15 +27,15 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
       const r = transformLoydImports(code, id, { ...transformOptions, verbose });
       if (!r) return null;
       transformedCount++;
-      if (verbose) console.log(`[@loyd/vite] Transformed: ${id}`);
+      if (verbose) console.log(`[@loydjs/vite] Transformed: ${id}`);
       return { code: r.code, map: r.map };
     },
     buildEnd() {
       if (enabled && verbose && transformedCount > 0)
-        console.log(`[@loyd/vite] Transformed ${transformedCount} files`);
+        console.log(`[@loydjs/vite] Transformed ${transformedCount} files`);
     },
     handleHotUpdate({ file }: { file: string }) {
-      if (enabled && verbose && hasLoydImports(file)) console.log(`[@loyd/vite] HMR: ${file}`);
+      if (enabled && verbose && hasLoydImports(file)) console.log(`[@loydjs/vite] HMR: ${file}`);
     },
   };
 }

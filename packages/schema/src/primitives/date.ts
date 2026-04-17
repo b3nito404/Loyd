@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult } from "@loydjs/core";
 export interface DateSchema extends BaseSchema<Date> {
   readonly _type: "date";
   min(d: Date, msg?: string): DateSchema;

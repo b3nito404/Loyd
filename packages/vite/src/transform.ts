@@ -17,9 +17,9 @@ export type AotTransformFn = (
 ) => AotTransformResult | null;
 export function hasLoydImports(source: string): boolean {
   return (
-    source.includes("@loyd/schema") ||
-    source.includes("@loyd/core") ||
-    source.includes("@loyd/compiler")
+    source.includes("@loydjs/schema") ||
+    source.includes("@loydjs/core") ||
+    source.includes("@loydjs/compiler")
   );
 }
 export function transformLoydImports(
@@ -28,5 +28,5 @@ export function transformLoydImports(
   _options: AotTransformOptions = {},
 ): AotTransformResult | null {
   if (!hasLoydImports(source)) return null;
-  return { code: `/* @loyd/vite: AOT-ready */\n${source}`, generatedFiles: [] };
+  return { code: `/* @loydjs/vite: AOT-ready */\n${source}`, generatedFiles: [] };
 }

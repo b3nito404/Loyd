@@ -1,4 +1,4 @@
-import type { LoydResult, LoydSchema } from "@loyd/core";
+import type { LoydResult, LoydSchema } from "@loydjs/core";
 
 export type RuntimeMode = "strict" | "strip" | "passthrough";
 

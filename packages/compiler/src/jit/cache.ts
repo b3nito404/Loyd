@@ -1,4 +1,4 @@
-import type { LoydSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
 import type { CompiledValidatorFn } from "./types.js";
 export interface CompilerCache {
   get<T>(s: LoydSchema<T>): CompiledValidatorFn<T> | undefined;

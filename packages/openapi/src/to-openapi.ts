@@ -1,4 +1,4 @@
-import type { LoydSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
 import { type JsonSchema7, type ToJsonSchemaOptions, toJsonSchema } from "./to-json-schema.js";
 export interface OpenApiSchemaObject extends JsonSchema7 {
   example?: unknown;

@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult } from "@loydjs/core";
 export interface OptionalSchema<T> extends BaseSchema<T | undefined> {
   readonly _type: "optional";
   readonly _inner: BaseSchema<T>;

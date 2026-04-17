@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydIssue, LoydResult, LoydSchema } from "@loydjs/core";
 export interface RecordSchema<K extends string, V> extends BaseSchema<Record<K, V>> {
   readonly _type: "record";
 }

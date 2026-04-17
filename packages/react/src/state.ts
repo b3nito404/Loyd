@@ -1,4 +1,4 @@
-import type { LoydIssue } from "@loyd/core";
+import type { LoydIssue } from "@loydjs/core";
 export interface FormStore<T extends Record<string, unknown>> {
   values: T;
   errors: Map<string, LoydIssue[]>;

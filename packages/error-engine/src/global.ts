@@ -1,4 +1,4 @@
-import type { LoydIssue } from "@loyd/core";
+import type { LoydIssue } from "@loydjs/core";
 import { type Locale, type LoydFormatter, type MessageMap, createFormatter } from "./formatter.js";
 import { en } from "./locales/en.js";
 let _global: LoydFormatter = createFormatter("en", en);

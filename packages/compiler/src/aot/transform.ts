@@ -1,6 +1,6 @@
 /**
  * @example
- * import { object, string, number } from "@loyd/schema";
+ * import { object, string, number } from "@loydjs/schema";
  * const UserSchema = object({ name: string(), age: number() });
  *
  * (compiled  AOT)

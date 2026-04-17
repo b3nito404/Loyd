@@ -18,9 +18,9 @@ export const TRANSFORMATIONS: Array<{
   replacement: string;
 }> = [
   {
-    description: "Replace zod import with @loyd/schema",
+    description: "Replace zod import with @loydjs/schema",
     pattern: /import\s*\{\s*z\s*\}\s*from\s*["']zod["']/g,
-    replacement: 'import * as L from "@loyd/schema"',
+    replacement: 'import * as L from "@loydjs/schema"',
   },
   { description: "z.infer → L.Infer", pattern: /z\.infer</g, replacement: "L.Infer<" },
   { description: "z.string()", pattern: /\bz\.string\(\)/g, replacement: "L.string()" },

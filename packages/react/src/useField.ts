@@ -1,4 +1,4 @@
-import type { LoydIssue } from "@loyd/core";
+import type { LoydIssue } from "@loydjs/core";
 import type { ChangeEvent, FocusEvent } from "react";
 
 export interface FieldState<T = unknown> {

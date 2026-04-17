@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult } from "@loydjs/core";
 export interface BigIntSchema extends BaseSchema<bigint> {
   readonly _type: "bigint";
   min(v: bigint, msg?: string): BigIntSchema;

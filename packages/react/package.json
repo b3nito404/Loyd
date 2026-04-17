@@ -1,8 +1,13 @@
 {
-  "name": "@loyd/react",
+  "name": "@loydjs/react",
   "version": "0.0.0",
   "description": "Loyd react — native React hooks",
-  "keywords": ["loyd", "validation", "typescript", "schema"],
+  "keywords": [
+    "loyd",
+    "validation",
+    "typescript",
+    "schema"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -20,32 +25,34 @@
       }
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup && pnpm build:types",
+    "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "bench": "echo no benchmarks",
-    "clean": "rm -rf dist *.tsbuildinfo",
-    "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap"
+    "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@loyd/core": "workspace:*",
-    "@loyd/schema": "workspace:*",
-    "@loyd/runtime": "workspace:*",
-    "@loyd/graph": "workspace:*",
-    "@loyd/async": "workspace:*",
-    "@loyd/error-engine": "workspace:*"
+    "@loydjs/core": "workspace:*",
+    "@loydjs/schema": "workspace:*",
+    "@loydjs/runtime": "workspace:*",
+    "@loydjs/graph": "workspace:*",
+    "@loydjs/async": "workspace:*",
+    "@loydjs/error-engine": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
   "devDependencies": {
-    "@loyd/schema": "workspace:*",
+    "@loydjs/schema": "workspace:*",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "react": "^18.3.1",

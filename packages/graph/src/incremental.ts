@@ -1,4 +1,4 @@
-import type { LoydIssue } from "@loyd/core";
+import type { LoydIssue } from "@loydjs/core";
 import type { FieldDag } from "./dag.js";
 import type { DirtyTracker } from "./dirty.js";
 export interface IncrementalValidationOptions {

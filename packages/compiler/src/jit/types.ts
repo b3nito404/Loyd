@@ -1,4 +1,4 @@
-import type { LoydResult } from "@loyd/core";
+import type { LoydResult } from "@loydjs/core";
 export type CompiledValidatorFn<T> = (input: unknown) => LoydResult<T>;
 export interface CompilerOptions {
   throwOnError?: boolean;

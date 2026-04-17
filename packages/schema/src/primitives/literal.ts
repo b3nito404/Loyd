@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult } from "@loydjs/core";
 export type Primitive = string | number | boolean | bigint | null | undefined;
 export interface LiteralSchema<T extends Primitive> extends BaseSchema<T> {
   readonly _type: "literal";

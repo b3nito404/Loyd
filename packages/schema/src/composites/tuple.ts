@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult, LoydSchema } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult, LoydSchema } from "@loydjs/core";
 export interface TupleSchema<T extends unknown[]> extends BaseSchema<T> {
   readonly _type: "tuple";
 }
@@ -25,7 +25,7 @@ class TupleSchemaImpl<T extends unknown[]> extends BaseSchema<T> implements Tupl
       });
     }
     const data: unknown[] = [];
-    const issues: import("@loyd/core").LoydIssue[] = [];
+    const issues: import("@loydjs/core").LoydIssue[] = [];
     for (let i = 0; i < this._items.length; i++) {
       const item = this._items[i];
       const val = input[i];
@@ -43,7 +43,7 @@ class TupleSchemaImpl<T extends unknown[]> extends BaseSchema<T> implements Tupl
       return {
         success: false as const,
         data: undefined,
-        issues: issues as [import("@loyd/core").LoydIssue, ...import("@loyd/core").LoydIssue[]],
+        issues: issues as [import("@loydjs/core").LoydIssue, ...import("@loydjs/core").LoydIssue[]],
       };
     }
     return this._ok(data as never);

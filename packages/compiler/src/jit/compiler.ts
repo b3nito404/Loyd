@@ -1,4 +1,4 @@
-import type { LoydSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
 import { globalCache } from "./cache.js";
 import { generateCode } from "./codegen.js";
 import { optimize } from "./optimizer.js";

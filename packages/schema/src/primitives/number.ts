@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult } from "@loydjs/core";
 export interface NumberSchema extends BaseSchema<number> {
   readonly _type: "number";
   min(v: number, msg?: string): NumberSchema;

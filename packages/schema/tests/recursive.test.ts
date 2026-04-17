@@ -1,4 +1,4 @@
-import type { LoydSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
 // packages/schema/tests/recursive.test.ts
 import { describe, expect, it } from "vitest";
 import { array, lazy, literal, number, object, optional, string, union } from "../src/index.js";

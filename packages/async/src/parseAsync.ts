@@ -1,5 +1,5 @@
-import { LoydError } from "@loyd/core";
-import type { LoydResult, LoydSchema } from "@loyd/core";
+import { LoydError } from "@loydjs/core";
+import type { LoydResult, LoydSchema } from "@loydjs/core";
 import { type ParseAsyncOptions, parseAsync } from "./pipeline.js";
 
 export async function parseAsyncOrThrow<T>(

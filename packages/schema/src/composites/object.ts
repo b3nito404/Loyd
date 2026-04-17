@@ -1,6 +1,6 @@
-import { BaseSchema, ok } from "@loyd/core";
-import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
-import type { InferSchemaMap, InferSchemaMapInput, SchemaMap } from "@loyd/types";
+import { BaseSchema, ok } from "@loydjs/core";
+import type { LoydIssue, LoydResult, LoydSchema } from "@loydjs/core";
+import type { InferSchemaMap, InferSchemaMapInput, SchemaMap } from "@loydjs/types";
 
 export type ObjectUnknownKeys = "strip" | "strict" | "passthrough";
 

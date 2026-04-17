@@ -1,4 +1,4 @@
-import type { LoydSchema } from "@loyd/core";
+import type { LoydSchema } from "@loydjs/core";
 
 // Internal helper type for schema introspection
 // biome-ignore lint/suspicious/noExplicitAny: schema internals are untyped by design
@@ -231,7 +231,7 @@ export function generateCode(
     schemaRefs: {},
   };
   gen(schema, ctx);
-  const header = dev ? `// @loyd/compiler — ${schema._type}\n` : "";
+  const header = dev ? `// @loydjs/compiler — ${schema._type}\n` : "";
   const body = ctx.lines.map((l) => `  ${l}`).join("\n");
   const code = `${header}function ${fnName}(input) {\n  let __input__ = input;\n  const __issues__ = [];\n${body}\n  if (__issues__.length > 0) return { success: false, data: undefined, issues: __issues__ };\n  return { success: true, data: __input__, issues: [] };\n}`;
   return { code, fnName, imports: [], schemaRefs: ctx.schemaRefs };

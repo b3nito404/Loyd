@@ -1,8 +1,13 @@
 {
-  "name": "@loyd/compiler",
+  "name": "@loydjs/compiler",
   "version": "0.0.0",
   "description": "Loyd compiler — JIT and AOT engine",
-  "keywords": ["loyd", "validation", "typescript", "schema"],
+  "keywords": [
+    "loyd",
+    "validation",
+    "typescript",
+    "schema"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -20,25 +25,27 @@
       }
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup && pnpm build:types",
+    "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "bench": "vitest bench",
-    "clean": "rm -rf dist *.tsbuildinfo",
-    "build:types": "tsc --emitDeclarationOnly --declaration --declarationMap"
+    "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@loyd/core": "workspace:*",
-    "@loyd/schema": "workspace:*",
-    "@loyd/error-engine": "workspace:*"
+    "@loydjs/core": "workspace:*",
+    "@loydjs/schema": "workspace:*",
+    "@loydjs/error-engine": "workspace:*"
   },
   "devDependencies": {
-    "@loyd/schema": "workspace:*",
+    "@loydjs/schema": "workspace:*",
     "typescript": "^5.7.2",
     "tsup": "^8.3.5",
     "vitest": "^2.1.8"

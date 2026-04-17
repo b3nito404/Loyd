@@ -1,4 +1,4 @@
-import type { LoydIssue, LoydResult, LoydSchema } from "@loyd/core";
+import type { LoydIssue, LoydResult, LoydSchema } from "@loydjs/core";
 import { signalToPromise } from "./abort.js";
 
 export interface ParseAsyncOptions {

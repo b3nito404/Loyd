@@ -1,5 +1,5 @@
-import { BaseSchema, asBranded } from "@loyd/core";
-import type { Branded, LoydResult } from "@loyd/core";
+import { BaseSchema, asBranded } from "@loydjs/core";
+import type { Branded, LoydResult } from "@loydjs/core";
 export interface BrandedSchema<T, B extends string> extends BaseSchema<Branded<T, B>> {
   readonly _type: "brand";
   readonly _inner: BaseSchema<T>;

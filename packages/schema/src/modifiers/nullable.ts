@@ -1,5 +1,5 @@
-import { BaseSchema } from "@loyd/core";
-import type { LoydResult } from "@loyd/core";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult } from "@loydjs/core";
 export interface NullableSchema<T> extends BaseSchema<T | null> {
   readonly _type: "nullable";
   readonly _inner: BaseSchema<T>;

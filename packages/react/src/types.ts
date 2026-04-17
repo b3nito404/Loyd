@@ -1,2 +1,2 @@
-import type { LoydIssue } from "@loyd/core";
+import type { LoydIssue } from "@loydjs/core";
 export type FormErrors = Record<string, LoydIssue[]>;
