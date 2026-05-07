@@ -1,25 +1,29 @@
 import type { LoydSchema } from "@loydjs/core";
 import { globalCache } from "./cache.js";
 import { generateCode } from "./codegen.js";
-import { optimize } from "./optimizer.js";
 import type { CompiledValidatorFn, CompilerOptions } from "./types.js";
+
 export type { CompiledValidatorFn, CompilerOptions };
+
 export function compile<T>(
   schema: LoydSchema<T>,
   options: CompilerOptions = {},
 ): CompiledValidatorFn<T> {
+  
   const cached = globalCache.get(schema);
   if (cached) return cached;
-  const target = options.optimize !== false ? optimize(schema).schema : schema;
-  const { code, fnName, schemaRefs } = generateCode(target, {
+
+  const { code, fnName, schemaRefs } = generateCode(schema, {
     mode: options.mode ?? "production",
     comments: options.mode === "development",
   });
-  const schemasRegistry = { ...schemaRefs, __schema_ref__: target };
-  // eslint-disable-next-line no-new-func
+
+  schemaRefs.__schema_ref__ = schema;
+
   const fn = new Function("__schemas__", `${code}\nreturn ${fnName};`)(
-    schemasRegistry,
+    schemaRefs,
   ) as CompiledValidatorFn<T>;
+
   globalCache.set(schema, fn);
   return fn;
 }

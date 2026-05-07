@@ -1,4 +1,3 @@
-// packages/core/src/base.ts
 import { LoydError } from "./errors.js";
 import { ok } from "./parse.js";
 import type { LoydResult, LoydSchema, SchemaMeta } from "./types.js";
