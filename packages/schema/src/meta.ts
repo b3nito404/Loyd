@@ -14,10 +14,10 @@ export type SchemaDiffEntry = {
     | "type_changed"
     | "constraint_tightened"
     | "constraint_relaxed";
-  path: Array<String | Number>;
+  path: Array<string | number>;
   before?: unknown;
-  after?:unknown;
-  breaking?:boolean
+  after?: unknown;
+  breaking?: boolean;
 };
 export function getMeta(schema: LoydSchema<unknown>): ExtendedSchemaMeta {
   return { type: schema._type, ...schema.meta() };

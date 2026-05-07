@@ -9,7 +9,6 @@ export function compile<T>(
   schema: LoydSchema<T>,
   options: CompilerOptions = {},
 ): CompiledValidatorFn<T> {
-  
   const cached = globalCache.get(schema);
   if (cached) return cached;
 
