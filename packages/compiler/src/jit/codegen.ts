@@ -1,11 +1,11 @@
 import type { LoydSchema } from "@loydjs/core";
+import type { InlinedRule, OptimizedNumberSchema, OptimizedStringSchema } from "./optimizer.js";
 
 // biome-ignore lint/suspicious/noExplicitAny: schema internals are untyped by design
-type SchemaInternal = any;
+type S = any;
 
 import type { CodegenOptions, CodegenResult } from "./types.js";
 const _state = { counter: 0 };
-
 interface Ctx {
   lines: string[];
   issues: string;
@@ -54,6 +54,10 @@ function gen(schema: LoydSchema<unknown>, ctx: Ctx): void {
     genArr(schema, ctx);
     return;
   }
+  if (t === "pipe") {
+    genPipe(schema, ctx);
+    return;
+  }
   if (t === "optional") {
     genOpt(schema, ctx);
     return;
@@ -66,8 +70,12 @@ function gen(schema: LoydSchema<unknown>, ctx: Ctx): void {
     genNullable(schema, ctx);
     return;
   }
+  if (t === "union") {
+    genUnion(schema, ctx);
+    return;
+  }
   if (t === "brand") {
-    const inner = (schema as SchemaInternal)._inner;
+    const inner = (schema as S)._inner;
     if (inner) gen(inner as LoydSchema<unknown>, ctx);
     return;
   }
@@ -81,86 +89,184 @@ function genDelegate(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const r = tmpVar(ctx, "r");
   emit(
     ctx,
-    `{ const ${r} = __schemas__[${JSON.stringify(id)}].safeParse(${v}); if (!${r}.success) { for (let __di__ = 0; __di__ < ${r}.issues.length; __di__++) { const __diss__ = ${r}.issues[__di__]; ${iss}.push({ code: __diss__.code, path: ${pathVar}.concat(__diss__.path), meta: __diss__.meta }); } } else { ${v} = ${r}.data; } }`,
+    `{ const ${r} = __schemas__[${JSON.stringify(id)}].safeParse(${v}); if (!${r}.success) { for (let __di__ = 0; __di__ < ${r}.issues.length; __di__++) { const __di2__ = ${r}.issues[__di__]; ${iss}.push({ code: __di2__.code, path: ${pathVar}.concat(__di2__.path), meta: __di2__.meta }); } } else { ${v} = ${r}.data; } }`,
   );
+}
+
+
+
+function emitInlinedRule(rule: InlinedRule, ctx: Ctx, isTransform = false): void {
+  const { value: v, issues: iss, pathVar } = ctx;
+
+  switch (rule.kind) {
+    case "str:minLength":
+      emit(
+        ctx,
+        `if (${v}.length < ${rule.min}) { ${iss}.push({ code: "ERR_STRING_TOO_SHORT", path: ${pathVar}.slice(), meta: { min: ${rule.min}, actual: ${v}.length } }); }`,
+      );
+      break;
+
+    case "str:maxLength":
+      emit(
+        ctx,
+        `if (${v}.length > ${rule.max}) { ${iss}.push({ code: "ERR_STRING_TOO_LONG", path: ${pathVar}.slice(), meta: { max: ${rule.max}, actual: ${v}.length } }); }`,
+      );
+      break;
+
+    case "str:email":
+      emit(
+        ctx,
+        `if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_EMAIL", path: ${pathVar}.slice() }); }`,
+      );
+      break;
+
+    case "str:url":
+      emit(
+        ctx,
+        `if (!/^https?:\\/\\/[^\\s$.?#].[^\\s]*$/i.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_URL", path: ${pathVar}.slice() }); }`,
+      );
+      break;
+
+    case "str:uuid":
+      emit(
+        ctx,
+        `if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_UUID", path: ${pathVar}.slice() }); }`,
+      );
+      break;
+
+    case "str:regex":
+      emit(
+        ctx,
+        `if (!/${rule.source}/${rule.flags}.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pathVar}.slice() }); }`,
+      );
+      break;
+
+    case "str:startsWith":
+      emit(
+        ctx,
+        `if (!${v}.startsWith(${JSON.stringify(rule.prefix)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pathVar}.slice(), meta: { prefix: ${JSON.stringify(rule.prefix)} } }); }`,
+      );
+      break;
+
+    case "str:endsWith":
+      emit(
+        ctx,
+        `if (!${v}.endsWith(${JSON.stringify(rule.suffix)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pathVar}.slice(), meta: { suffix: ${JSON.stringify(rule.suffix)} } }); }`,
+      );
+      break;
+
+    case "str:includes":
+      emit(
+        ctx,
+        `if (!${v}.includes(${JSON.stringify(rule.sub)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pathVar}.slice(), meta: { substring: ${JSON.stringify(rule.sub)} } }); }`,
+      );
+      break;
+
+    case "str:nonempty":
+      emit(
+        ctx,
+        `if (${v}.length === 0) { ${iss}.push({ code: "ERR_STRING_TOO_SHORT", path: ${pathVar}.slice(), meta: { min: 1, actual: 0 } }); }`,
+      );
+      break;
+
+    case "str:trim":
+      emit(ctx, `${v} = ${v}.trim();`);
+      break;
+
+    case "str:toLowerCase":
+      emit(ctx, `${v} = ${v}.toLowerCase();`);
+      break;
+
+    case "str:toUpperCase":
+      emit(ctx, `${v} = ${v}.toUpperCase();`);
+      break;
+
+    case "num:min": {
+      const op = rule.inclusive ? "<" : "<=";
+      const code = rule.inclusive ? "ERR_NUMBER_TOO_SMALL" : "ERR_NUMBER_TOO_SMALL";
+      emit(
+        ctx,
+        `if (${v} ${op} ${rule.min}) { ${iss}.push({ code: "${code}", path: ${pathVar}.slice(), meta: { min: ${rule.min}, actual: ${v}, inclusive: ${rule.inclusive} } }); }`,
+      );
+      break;
+    }
+
+    case "num:max": {
+      const op = rule.inclusive ? ">" : ">=";
+      emit(
+        ctx,
+        `if (${v} ${op} ${rule.max}) { ${iss}.push({ code: "ERR_NUMBER_TOO_LARGE", path: ${pathVar}.slice(), meta: { max: ${rule.max}, actual: ${v}, inclusive: ${rule.inclusive} } }); }`,
+      );
+      break;
+    }
+
+    case "num:int":
+      emit(
+        ctx,
+        `if (!Number.isInteger(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_INTEGER", path: ${pathVar}.slice(), meta: { actual: ${v} } }); }`,
+      );
+      break;
+
+    case "num:finite":
+      emit(
+        ctx,
+        `if (!Number.isFinite(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_FINITE", path: ${pathVar}.slice(), meta: { actual: ${v} } }); }`,
+      );
+      break;
+
+    case "num:safe":
+      emit(
+        ctx,
+        `if (!Number.isSafeInteger(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_INTEGER", path: ${pathVar}.slice(), meta: { actual: ${v} } }); }`,
+      );
+      break;
+
+    case "num:multipleOf":
+      emit(
+        ctx,
+        `if (${v} % ${rule.factor} !== 0) { ${iss}.push({ code: "ERR_NUMBER_NOT_MULTIPLE", path: ${pathVar}.slice(), meta: { multipleOf: ${rule.factor}, actual: ${v} } }); }`,
+      );
+      break;
+
+    case "unknown":
+      break;
+  }
 }
 
 function genStr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const { value: v, issues: iss, pathVar } = ctx;
-  const s = schema as SchemaInternal;
-  const rules: Array<{ kind: string; [k: string]: unknown }> = s._rules ?? [];
-  const hasTransforms = (s._transforms?.length ?? 0) > 0;
+  const s = schema as OptimizedStringSchema & S;
 
-  // Type check always inlined
+  // Uses inline rules
+  const hasInlined = s._inlinedRules !== undefined;
+  const inlinedRules: InlinedRule[] = hasInlined ? s._inlinedRules : [];
+  const inlinedTransforms: InlinedRule[] = hasInlined ? (s._inlinedTransforms ?? []) : [];
+  const hasUnknownRules: boolean = hasInlined ? (s._hasUnknownRules ?? false) : false;
+
+  // Fallback 
+  const rawRules: unknown[] = (!hasInlined && (s._rules?.length ?? 0) > 0) ? (s._rules ?? []) : [];
+  const rawTransforms: unknown[] = (!hasInlined && (s._transforms?.length ?? 0) > 0) ? (s._transforms ?? []) : [];
+
   emit(ctx, `if (typeof ${v} !== "string") {`);
   emit(ctx, `  ${iss}.push({ code: "ERR_STRING_INVALID_TYPE", path: ${pathVar}.slice() });`);
   emit(ctx, "} else {");
 
-  for (const rule of rules) {
-    switch (rule.kind) {
-      case "minLength": {
-        const min = rule.min as number;
-        emit(
-          ctx,
-          `  if (${v}.length < ${min}) { ${iss}.push({ code: "ERR_STRING_TOO_SHORT", path: ${pathVar}.slice(), meta: { min: ${min}, actual: ${v}.length } }); }`,
-        );
-        break;
-      }
-      case "maxLength": {
-        const max = rule.max as number;
-        emit(
-          ctx,
-          `  if (${v}.length > ${max}) { ${iss}.push({ code: "ERR_STRING_TOO_LONG", path: ${pathVar}.slice(), meta: { max: ${max}, actual: ${v}.length } }); }`,
-        );
-        break;
-      }
-      case "pattern": {
-        const src = (rule.pattern as RegExp).source;
-        const flags = (rule.pattern as RegExp).flags;
-        emit(
-          ctx,
-          `  if (!/${src}/${flags}.test(${v})) { ${iss}.push({ code: "ERR_STRING_PATTERN_MISMATCH", path: ${pathVar}.slice() }); }`,
-        );
-        break;
-      }
-      case "email": {
-        emit(
-          ctx,
-          `  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_EMAIL", path: ${pathVar}.slice() }); }`,
-        );
-        break;
-      }
-      case "url": {
-        emit(
-          ctx,
-          `  try { new URL(${v}); } catch { ${iss}.push({ code: "ERR_STRING_INVALID_URL", path: ${pathVar}.slice() }); }`,
-        );
-        break;
-      }
-      case "uuid": {
-        emit(
-          ctx,
-          `  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_UUID", path: ${pathVar}.slice() }); }`,
-        );
-        break;
-      }
-      default: {
-        if (!hasTransforms) {
-          const id = reg(ctx, schema);
-          const r = tmpVar(ctx, "r");
-          emit(
-            ctx,
-            `  const ${r} = __schemas__[${JSON.stringify(id)}].safeParse(${v}); if (!${r}.success) { for (let __si__ = 0; __si__ < ${r}.issues.length; __si__++) { const __siss__ = ${r}.issues[__si__]; ${iss}.push({ code: __siss__.code, path: ${pathVar}.concat(__siss__.path), meta: __siss__.meta }); } } else { ${v} = ${r}.data; }`,
-          );
-          break;
-        }
-      }
+  for (const t of inlinedTransforms) {
+    if (t.kind !== "unknown") {
+      emitInlinedRule(t, ctx, true);
     }
   }
 
-  if (hasTransforms) {
+  // inline rules
+  for (const rule of inlinedRules) {
+    if (rule.kind !== "unknown") {
+      emitInlinedRule(rule, ctx);
+    }
+  }
+
+  if (hasUnknownRules || rawRules.length > 0 || rawTransforms.length > 0) {
     const id = reg(ctx, schema);
-    const r = tmpVar(ctx, "r");
+    const r = tmpVar(ctx, "sr");
     emit(
       ctx,
       `  const ${r} = __schemas__[${JSON.stringify(id)}].safeParse(${v}); if (!${r}.success) { for (let __si__ = 0; __si__ < ${r}.issues.length; __si__++) { const __siss__ = ${r}.issues[__si__]; ${iss}.push({ code: __siss__.code, path: ${pathVar}.concat(__siss__.path), meta: __siss__.meta }); } } else { ${v} = ${r}.data; }`,
@@ -169,10 +275,15 @@ function genStr(schema: LoydSchema<unknown>, ctx: Ctx): void {
 
   emit(ctx, "}");
 }
+
 function genNum(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const { value: v, issues: iss, pathVar } = ctx;
-  const s = schema as SchemaInternal;
-  const rules: Array<{ kind: string; [k: string]: unknown }> = s._rules ?? [];
+  const s = schema as OptimizedNumberSchema & S;
+
+  const hasInlined = s._inlinedRules !== undefined;
+  const inlinedRules: InlinedRule[] = hasInlined ? s._inlinedRules : [];
+  const hasUnknownRules: boolean = hasInlined ? (s._hasUnknownRules ?? false) : false;
+  const rawRules: unknown[] = (!hasInlined && (s._rules?.length ?? 0) > 0) ? (s._rules ?? []) : [];
 
   emit(ctx, `if (typeof ${v} !== "number") {`);
   emit(ctx, `  ${iss}.push({ code: "ERR_NUMBER_INVALID_TYPE", path: ${pathVar}.slice() });`);
@@ -180,69 +291,19 @@ function genNum(schema: LoydSchema<unknown>, ctx: Ctx): void {
   emit(ctx, `  ${iss}.push({ code: "ERR_NUMBER_NAN", path: ${pathVar}.slice() });`);
   emit(ctx, "} else {");
 
-  for (const rule of rules) {
-    switch (rule.kind) {
-      case "min": {
-        const min = rule.min as number;
-        const excl = rule.exclusive as boolean | undefined;
-        const op = excl ? "<=" : "<";
-        const code = excl ? "ERR_NUMBER_TOO_SMALL_EXCLUSIVE" : "ERR_NUMBER_TOO_SMALL";
-        emit(
-          ctx,
-          `  if (${v} ${op} ${min}) { ${iss}.push({ code: "${code}", path: ${pathVar}.slice(), meta: { min: ${min}, actual: ${v} } }); }`,
-        );
-        break;
-      }
-      case "max": {
-        const max = rule.max as number;
-        const excl = rule.exclusive as boolean | undefined;
-        const op = excl ? ">=" : ">";
-        const code = excl ? "ERR_NUMBER_TOO_BIG_EXCLUSIVE" : "ERR_NUMBER_TOO_BIG";
-        emit(
-          ctx,
-          `  if (${v} ${op} ${max}) { ${iss}.push({ code: "${code}", path: ${pathVar}.slice(), meta: { max: ${max}, actual: ${v} } }); }`,
-        );
-        break;
-      }
-      case "int": {
-        emit(
-          ctx,
-          `  if (!Number.isInteger(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_INTEGER", path: ${pathVar}.slice(), meta: { actual: ${v} } }); }`,
-        );
-        break;
-      }
-      case "positive": {
-        emit(
-          ctx,
-          `  if (${v} <= 0) { ${iss}.push({ code: "ERR_NUMBER_NOT_POSITIVE", path: ${pathVar}.slice(), meta: { actual: ${v} } }); }`,
-        );
-        break;
-      }
-      case "negative": {
-        emit(
-          ctx,
-          `  if (${v} >= 0) { ${iss}.push({ code: "ERR_NUMBER_NOT_NEGATIVE", path: ${pathVar}.slice(), meta: { actual: ${v} } }); }`,
-        );
-        break;
-      }
-      case "multipleOf": {
-        const factor = rule.factor as number;
-        emit(
-          ctx,
-          `  if (${v} % ${factor} !== 0) { ${iss}.push({ code: "ERR_NUMBER_NOT_MULTIPLE", path: ${pathVar}.slice(), meta: { factor: ${factor}, actual: ${v} } }); }`,
-        );
-        break;
-      }
-      default: {
-        const id = reg(ctx, schema);
-        const r = tmpVar(ctx, "r");
-        emit(
-          ctx,
-          `  const ${r} = __schemas__[${JSON.stringify(id)}].safeParse(${v}); if (!${r}.success) { for (let __ni__ = 0; __ni__ < ${r}.issues.length; __ni__++) { const __niss__ = ${r}.issues[__ni__]; ${iss}.push({ code: __niss__.code, path: ${pathVar}.concat(__niss__.path), meta: __niss__.meta }); } }`,
-        );
-        break;
-      }
+  for (const rule of inlinedRules) {
+    if (rule.kind !== "unknown") {
+      emitInlinedRule(rule, ctx);
     }
+  }
+
+  if (hasUnknownRules || rawRules.length > 0) {
+    const id = reg(ctx, schema);
+    const r = tmpVar(ctx, "nr");
+    emit(
+      ctx,
+      `  const ${r} = __schemas__[${JSON.stringify(id)}].safeParse(${v}); if (!${r}.success) { for (let __ni__ = 0; __ni__ < ${r}.issues.length; __ni__++) { const __niss__ = ${r}.issues[__ni__]; ${iss}.push({ code: __niss__.code, path: ${pathVar}.concat(__niss__.path), meta: __niss__.meta }); } }`,
+    );
   }
 
   emit(ctx, "}");
@@ -255,19 +316,25 @@ function genBool(ctx: Ctx): void {
     `if (typeof ${v} !== "boolean") { ${iss}.push({ code: "ERR_BOOLEAN_INVALID_TYPE", path: ${pathVar}.slice() }); }`,
   );
 }
+
 function genLit(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const { value: v, issues: iss, pathVar } = ctx;
-  const exp = JSON.stringify((schema as SchemaInternal).value);
+  const exp = JSON.stringify((schema as S).value);
   emit(
     ctx,
     `if (${v} !== ${exp}) { ${iss}.push({ code: "ERR_LITERAL_INVALID", path: ${pathVar}.slice(), meta: { expected: ${exp}, actual: ${v} } }); }`,
   );
 }
+
 function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const { value: v, issues: iss, pathVar } = ctx;
-  const shape = (schema as SchemaInternal).shape ?? ({} as Record<string, LoydSchema<unknown>>);
-  const keys = Object.keys(shape);
-  if (keys.length === 0) {
+  const s = schema as S;
+  const shape = s.shape as Record<string, LoydSchema<unknown>>;
+
+  const keys: string[] = s._precomputedKeys ?? (shape ? Object.keys(shape) : []);
+  const unknownKeys: string = s._unknownKeys ?? "strip";
+
+  if (keys.length === 0 && unknownKeys === "strip") {
     emit(
       ctx,
       `if (typeof ${v} !== "object" || ${v} === null || Array.isArray(${v})) { ${iss}.push({ code: "ERR_OBJECT_INVALID_TYPE", path: ${pathVar}.slice() }); }`,
@@ -304,19 +371,37 @@ function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
     emit(ctx, `  ${pathVar}.pop();`);
     emit(ctx, `  ${obj}[${keyLit}] = ${fv};`);
   }
+
+  if (unknownKeys === "strict") {
+    const knownSet = tmpVar(ctx, "ks");
+    const uk = tmpVar(ctx, "uk");
+    const keysLiteral = JSON.stringify(keys);
+    emit(ctx, `  const ${knownSet} = new Set(${keysLiteral});`);
+    emit(
+      ctx,
+      `  const ${uk} = Object.keys(${obj}).filter(k => !${knownSet}.has(k));`,
+    );
+    emit(
+      ctx,
+      `  if (${uk}.length > 0) { ${iss}.push({ code: "ERR_OBJECT_UNKNOWN_KEYS", path: ${pathVar}.slice(), meta: { keys: ${uk} } }); }`,
+    );
+  } else if (unknownKeys === "passthrough") {
+    const knownSet = tmpVar(ctx, "ks");
+    const keysLiteral = JSON.stringify(keys);
+    emit(ctx, `  const ${knownSet} = new Set(${keysLiteral});`);
+    emit(
+      ctx,
+      `  for (const __pk__ of Object.keys(${obj})) { if (!${knownSet}.has(__pk__)) { ${obj}[__pk__] = (${v} as Record<string,unknown>)[__pk__]; } }`,
+    );
+  }
+
   emit(ctx, `  if (${iss}.length === ${pl}) ${v} = ${obj} as typeof ${v};`);
   emit(ctx, "}");
 }
 
 function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const { value: v, issues: iss, pathVar } = ctx;
-
-  type ArrSchemaInternal = LoydSchema<unknown> & {
-    _minLen?: number;
-    _maxLen?: number;
-    element?: LoydSchema<unknown>;
-  };
-  const s = schema as ArrSchemaInternal;
+  const s = schema as S;
   const ap = tmpVar(ctx, "ap");
   const i = tmpVar(ctx, "i");
   const el = tmpVar(ctx, "el");
@@ -344,7 +429,6 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
 
   if (s.element) {
     emit(ctx, `    ${pathVar}.push(${i});`);
-
     const ec: Ctx = {
       ...ctx,
       lines: [],
@@ -352,9 +436,8 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
       pathVar,
       schemaRefs: ctx.schemaRefs,
     };
-    gen(s.element, ec);
+    gen(s.element as LoydSchema<unknown>, ec);
     for (const l of ec.lines) emit(ctx, `    ${l}`);
-
     emit(ctx, `    ${pathVar}.pop();`);
   }
 
@@ -363,8 +446,41 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   emit(ctx, "}");
 }
 
+
+function genPipe(schema: LoydSchema<unknown>, ctx: Ctx): void {
+  const s = schema as S;
+  // Use _flatSchemas if the optimizer produced it, otherwise _schemas
+  const schemas: ReadonlyArray<LoydSchema<unknown>> =
+    s._flatSchemas ?? s._schemas ?? [];
+
+  if (schemas.length === 0) return;
+
+  const { issues: iss } = ctx;
+  const pl = tmpVar(ctx, "pl");
+
+  emit(ctx, `const ${pl} = ${iss}.length;`);
+
+  for (let i = 0; i < schemas.length; i++) {
+    if (i > 0) {
+      emit(ctx, `if (${iss}.length === ${pl}) {`);
+    }
+
+    const sc: Ctx = {
+      ...ctx,
+      lines: [],
+      schemaRefs: ctx.schemaRefs,
+    };
+    gen(schemas[i], sc);
+    for (const l of sc.lines) emit(ctx, `  ${l}`);
+
+    if (i > 0) {
+      emit(ctx, "}");
+    }
+  }
+}
+
 function genOpt(schema: LoydSchema<unknown>, ctx: Ctx): void {
-  const inner = (schema as SchemaInternal)._inner as LoydSchema<unknown> | undefined;
+  const inner = (schema as S)._inner as LoydSchema<unknown> | undefined;
   const v = ctx.value;
   emit(ctx, `if (${v} !== undefined) {`);
   if (inner) {
@@ -374,13 +490,14 @@ function genOpt(schema: LoydSchema<unknown>, ctx: Ctx): void {
   }
   emit(ctx, "}");
 }
+
 function genNullable(schema: LoydSchema<unknown>, ctx: Ctx): void {
-  const inner = (schema as SchemaInternal)._inner as LoydSchema<unknown> | undefined;
+  const inner = (schema as S)._inner as LoydSchema<unknown> | undefined;
   const t = schema._type;
   const v = ctx.value;
 
-  // nullish = null | undefined, nullable = null
-  const guard = t === "nullish" ? `${v} !== null && ${v} !== undefined` : `${v} !== null`;
+  const guard =
+    t === "nullish" ? `${v} !== null && ${v} !== undefined` : `${v} !== null`;
 
   emit(ctx, `if (${guard}) {`);
   if (inner) {
@@ -391,7 +508,65 @@ function genNullable(schema: LoydSchema<unknown>, ctx: Ctx): void {
   emit(ctx, "}");
 }
 
-//Entry point
+function genUnion(schema: LoydSchema<unknown>, ctx: Ctx): void {
+  const { value: v, issues: iss, pathVar } = ctx;
+  const s = schema as S;
+
+  //O(1) lookup
+  if (s._discriminatorKey && s._discriminatorMap) {
+    const key = JSON.stringify(s._discriminatorKey);
+    const mapId = reg(ctx, schema);
+    const disc = tmpVar(ctx, "disc");
+    const matched = tmpVar(ctx, "matched");
+    const r = tmpVar(ctx, "ur");
+
+    emit(
+      ctx,
+      `if (typeof ${v} !== "object" || ${v} === null) { ${iss}.push({ code: "ERR_OBJECT_INVALID_TYPE", path: ${pathVar}.slice() }); } else {`,
+    );
+    emit(ctx, `  const ${disc} = (${v} as Record<string,unknown>)[${key}];`);
+    emit(
+      ctx,
+      `  const ${matched} = __schemas__[${JSON.stringify(mapId)}]._discriminatorMap?.get(${disc});`,
+    );
+    emit(
+      ctx,
+      `  if (!${matched}) { ${iss}.push({ code: "ERR_DISCRIMINATED_UNION_INVALID_KEY", path: ${pathVar}.slice(), meta: { key: ${key}, received: ${disc} } }); } else {`,
+    );
+    emit(
+      ctx,
+      `    const ${r} = ${matched}.safeParse(${v}); if (!${r}.success) { for (let __ui__ = 0; __ui__ < ${r}.issues.length; __ui__++) { const __uiss__ = ${r}.issues[__ui__]; ${iss}.push({ code: __uiss__.code, path: ${pathVar}.concat(__uiss__.path), meta: __uiss__.meta }); } } else { ${v} = ${r}.data; }`,
+    );
+    emit(ctx, "  }");
+    emit(ctx, "}");
+    return;
+  }
+
+  const options = s._options as ReadonlyArray<LoydSchema<unknown>>;
+  if (!options || options.length === 0) {
+    emit(ctx, `${iss}.push({ code: "ERR_UNION_NO_MATCH", path: ${pathVar}.slice() });`);
+    return;
+  }
+
+  const matched = tmpVar(ctx, "um");
+  emit(ctx, `let ${matched} = false;`);
+
+  for (const option of options) {
+    const id = reg(ctx, option);
+    const r = tmpVar(ctx, "ur");
+    emit(
+      ctx,
+      `if (!${matched}) { const ${r} = __schemas__[${JSON.stringify(id)}].safeParse(${v}); if (${r}.success) { ${v} = ${r}.data; ${matched} = true; } }`,
+    );
+  }
+
+  emit(
+    ctx,
+    `if (!${matched}) { ${iss}.push({ code: "ERR_UNION_NO_MATCH", path: ${pathVar}.slice() }); }`,
+  );
+}
+
+//entry point
 export function generateCode(
   schema: LoydSchema<unknown>,
   options: CodegenOptions = {},
@@ -416,6 +591,7 @@ export function generateCode(
 
   const header = dev ? `// @loydjs/compiler — ${schema._type}\n` : "";
   const body = ctx.lines.map((l) => `  ${l}`).join("\n");
+
   const code = `${header}function ${fnName}(input) {\n  "use strict";\n  let __input__ = input;\n  const __issues__ = [];\n  const ${pathVar} = [];\n${body}\n  if (__issues__.length > 0) return { success: false, data: undefined, issues: __issues__ };\n  return { success: true, data: __input__, issues: [] };\n}`;
 
   return { code, fnName, imports: [], schemaRefs: ctx.schemaRefs };
