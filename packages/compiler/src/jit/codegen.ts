@@ -93,9 +93,7 @@ function genDelegate(schema: LoydSchema<unknown>, ctx: Ctx): void {
   );
 }
 
-
-
-function emitInlinedRule(rule: InlinedRule, ctx: Ctx, isTransform = false): void {
+function emitInlinedRule(rule: InlinedRule, ctx: Ctx, _isTransform = false): void {
   const { value: v, issues: iss, pathVar } = ctx;
 
   switch (rule.kind) {
@@ -243,9 +241,10 @@ function genStr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const inlinedTransforms: InlinedRule[] = hasInlined ? (s._inlinedTransforms ?? []) : [];
   const hasUnknownRules: boolean = hasInlined ? (s._hasUnknownRules ?? false) : false;
 
-  // Fallback 
-  const rawRules: unknown[] = (!hasInlined && (s._rules?.length ?? 0) > 0) ? (s._rules ?? []) : [];
-  const rawTransforms: unknown[] = (!hasInlined && (s._transforms?.length ?? 0) > 0) ? (s._transforms ?? []) : [];
+  // Fallback
+  const rawRules: unknown[] = !hasInlined && (s._rules?.length ?? 0) > 0 ? (s._rules ?? []) : [];
+  const rawTransforms: unknown[] =
+    !hasInlined && (s._transforms?.length ?? 0) > 0 ? (s._transforms ?? []) : [];
 
   emit(ctx, `if (typeof ${v} !== "string") {`);
   emit(ctx, `  ${iss}.push({ code: "ERR_STRING_INVALID_TYPE", path: ${pathVar}.slice() });`);
@@ -283,7 +282,7 @@ function genNum(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const hasInlined = s._inlinedRules !== undefined;
   const inlinedRules: InlinedRule[] = hasInlined ? s._inlinedRules : [];
   const hasUnknownRules: boolean = hasInlined ? (s._hasUnknownRules ?? false) : false;
-  const rawRules: unknown[] = (!hasInlined && (s._rules?.length ?? 0) > 0) ? (s._rules ?? []) : [];
+  const rawRules: unknown[] = !hasInlined && (s._rules?.length ?? 0) > 0 ? (s._rules ?? []) : [];
 
   emit(ctx, `if (typeof ${v} !== "number") {`);
   emit(ctx, `  ${iss}.push({ code: "ERR_NUMBER_INVALID_TYPE", path: ${pathVar}.slice() });`);
@@ -377,10 +376,7 @@ function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
     const uk = tmpVar(ctx, "uk");
     const keysLiteral = JSON.stringify(keys);
     emit(ctx, `  const ${knownSet} = new Set(${keysLiteral});`);
-    emit(
-      ctx,
-      `  const ${uk} = Object.keys(${obj}).filter(k => !${knownSet}.has(k));`,
-    );
+    emit(ctx, `  const ${uk} = Object.keys(${obj}).filter(k => !${knownSet}.has(k));`);
     emit(
       ctx,
       `  if (${uk}.length > 0) { ${iss}.push({ code: "ERR_OBJECT_UNKNOWN_KEYS", path: ${pathVar}.slice(), meta: { keys: ${uk} } }); }`,
@@ -446,12 +442,10 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   emit(ctx, "}");
 }
 
-
 function genPipe(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const s = schema as S;
   // Use _flatSchemas if the optimizer produced it, otherwise _schemas
-  const schemas: ReadonlyArray<LoydSchema<unknown>> =
-    s._flatSchemas ?? s._schemas ?? [];
+  const schemas: ReadonlyArray<LoydSchema<unknown>> = s._flatSchemas ?? s._schemas ?? [];
 
   if (schemas.length === 0) return;
 
@@ -496,8 +490,7 @@ function genNullable(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const t = schema._type;
   const v = ctx.value;
 
-  const guard =
-    t === "nullish" ? `${v} !== null && ${v} !== undefined` : `${v} !== null`;
+  const guard = t === "nullish" ? `${v} !== null && ${v} !== undefined` : `${v} !== null`;
 
   emit(ctx, `if (${guard}) {`);
   if (inner) {

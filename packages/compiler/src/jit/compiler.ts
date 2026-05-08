@@ -14,9 +14,10 @@ export function compile<T>(
   const cached = globalCache.get(schema);
   if (cached) return cached;
 
-  const { schema: target } = options.optimize !== false
-    ? optimize(schema as LoydSchema<unknown>)
-    : { schema: schema as LoydSchema<unknown> };
+  const { schema: target } =
+    options.optimize !== false
+      ? optimize(schema as LoydSchema<unknown>)
+      : { schema: schema as LoydSchema<unknown> };
 
   const { code, fnName, schemaRefs } = generateCode(target, {
     mode: options.mode ?? "production",

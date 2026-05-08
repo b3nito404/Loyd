@@ -4,7 +4,6 @@ export interface OptimizerResult {
   appliedOptimizations: string[];
 }
 
-
 export type InlinedRule =
   // String
   | { kind: "str:minLength"; min: number }
@@ -28,7 +27,7 @@ export type InlinedRule =
   | { kind: "str:trim" }
   | { kind: "str:toLowerCase" }
   | { kind: "str:toUpperCase" }
-  // Unknown 
+  // Unknown
   | { kind: "unknown" };
 
 export interface OptimizedStringSchema extends LoydSchema<unknown> {
@@ -73,7 +72,6 @@ export interface OptimizedUnionSchema extends LoydSchema<unknown> {
 // biome-ignore lint/suspicious/noExplicitAny: schema internals
 type S = any;
 
-
 const SENTINELS = {
   EMPTY: "",
   ONE_CHAR: "a",
@@ -97,8 +95,12 @@ const SENTINELS = {
   INF: Number.POSITIVE_INFINITY,
 };
 
-type StringRule = (v: string) => { success: boolean; issues?: Array<{ code: string; meta?: Record<string, unknown> }> } | null;
-type NumberRule = (v: number) => { success: boolean; issues?: Array<{ code: string; meta?: Record<string, unknown> }> } | null;
+type StringRule = (
+  v: string,
+) => { success: boolean; issues?: Array<{ code: string; meta?: Record<string, unknown> }> } | null;
+type NumberRule = (
+  v: number,
+) => { success: boolean; issues?: Array<{ code: string; meta?: Record<string, unknown> }> } | null;
 
 function fingerprintStringRule(rule: StringRule): InlinedRule {
   const tryRule = (v: string) => {
@@ -109,7 +111,6 @@ function fingerprintStringRule(rule: StringRule): InlinedRule {
     }
   };
 
-  
   const onEmpty = tryRule(SENTINELS.EMPTY);
   if (onEmpty && !onEmpty.success) {
     const code = onEmpty.issues?.[0]?.code;
@@ -141,18 +142,19 @@ function fingerprintStringRule(rule: StringRule): InlinedRule {
   const onInvalidEmail = tryRule(SENTINELS.INVALID_EMAIL);
   const onValidEmail = tryRule(SENTINELS.VALID_EMAIL);
   if (
-    onInvalidEmail && !onInvalidEmail.success &&
+    onInvalidEmail &&
+    !onInvalidEmail.success &&
     onInvalidEmail.issues?.[0]?.code === "ERR_STRING_INVALID_EMAIL" &&
     (!onValidEmail || onValidEmail.success !== false)
   ) {
     return { kind: "str:email" };
   }
 
- 
   const onInvalidUrl = tryRule(SENTINELS.INVALID_URL);
   const onValidUrl = tryRule(SENTINELS.VALID_URL);
   if (
-    onInvalidUrl && !onInvalidUrl.success &&
+    onInvalidUrl &&
+    !onInvalidUrl.success &&
     onInvalidUrl.issues?.[0]?.code === "ERR_STRING_INVALID_URL" &&
     (!onValidUrl || onValidUrl.success !== false)
   ) {
@@ -163,13 +165,13 @@ function fingerprintStringRule(rule: StringRule): InlinedRule {
   const onInvalidUuid = tryRule(SENTINELS.INVALID_UUID);
   const onValidUuid = tryRule(SENTINELS.VALID_UUID);
   if (
-    onInvalidUuid && !onInvalidUuid.success &&
+    onInvalidUuid &&
+    !onInvalidUuid.success &&
     onInvalidUuid.issues?.[0]?.code === "ERR_STRING_INVALID_UUID" &&
     (!onValidUuid || onValidUuid.success !== false)
   ) {
     return { kind: "str:uuid" };
   }
-
 
   const onOne = tryRule(SENTINELS.ONE_CHAR);
   if (onOne && !onOne.success) {
@@ -184,11 +186,11 @@ function fingerprintStringRule(rule: StringRule): InlinedRule {
       if (meta?.suffix !== undefined) {
         return { kind: "str:endsWith", suffix: String(meta.suffix) };
       }
-     
+
       if (meta?.substring !== undefined) {
         return { kind: "str:includes", sub: String(meta.substring) };
       }
-  
+
       if (meta?.pattern !== undefined) {
         return { kind: "str:regex", source: String(meta.pattern), flags: "" };
       }
@@ -239,7 +241,6 @@ function fingerprintNumberRule(rule: NumberRule): InlinedRule {
     }
   }
 
-  
   const onZero = tryRule(SENTINELS.ZERO);
   const onNegOne = tryRule(SENTINELS.NEG_ONE);
   const onLarge = tryRule(SENTINELS.LARGE);
@@ -298,8 +299,10 @@ function fingerprintNumberRule(rule: NumberRule): InlinedRule {
   }
 
   if (
-    onZero && !onZero.success &&
-    onNegOne && !onNegOne.success &&
+    onZero &&
+    !onZero.success &&
+    onNegOne &&
+    !onNegOne.success &&
     (!onLarge || onLarge.success !== false)
   ) {
     const code = onZero.issues?.[0]?.code;
@@ -313,9 +316,7 @@ function fingerprintNumberRule(rule: NumberRule): InlinedRule {
   return { kind: "unknown" };
 }
 
-function fingerprintStringTransform(
-  transform: (s: string) => string,
-): InlinedRule {
+function fingerprintStringTransform(transform: (s: string) => string): InlinedRule {
   try {
     const withSpaces = transform(SENTINELS.WITH_SPACES);
     if (withSpaces === SENTINELS.WITH_SPACES.trim()) return { kind: "str:trim" };
@@ -342,10 +343,7 @@ function flattenPipe(schema: LoydSchema<unknown>): LoydSchema<unknown>[] {
   return result;
 }
 
-function optimizeSchema(
-  schema: LoydSchema<unknown>,
-  optimizations: string[],
-): LoydSchema<unknown> {
+function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): LoydSchema<unknown> {
   const t = schema._type;
 
   if (t === "string") {
@@ -372,14 +370,15 @@ function optimizeSchema(
       if (inlined.kind === "unknown") hasUnknownRules = true;
     }
 
-    const inlinedCount = inlinedRules.filter((r) => r.kind !== "unknown").length +
+    const inlinedCount =
+      inlinedRules.filter((r) => r.kind !== "unknown").length +
       inlinedTransforms.filter((r) => r.kind !== "unknown").length;
 
     if (inlinedCount > 0) {
       optimizations.push(`string:inline-${inlinedCount}-rules`);
     }
 
-    // Return  schema with structured rules 
+    // Return  schema with structured rules
     return Object.assign(Object.create(Object.getPrototypeOf(schema) as object), schema, {
       _inlinedRules: inlinedRules,
       _inlinedTransforms: inlinedTransforms,
@@ -462,7 +461,6 @@ function optimizeSchema(
     const flat = flattenPipe(schema);
     const wasNested = flat.length !== schemas.length;
 
-
     const optimizedFlat = flat.map((s) => optimizeSchema(s, optimizations));
     const anyOptimized = optimizedFlat.some((s, i) => s !== flat[i]);
 
@@ -495,13 +493,11 @@ function optimizeSchema(
     return schema;
   }
 
-
   if (t === "union") {
     const options = (schema as S)._options as ReadonlyArray<LoydSchema<unknown>>;
     if (!options) return schema;
     const optimizedOptions = options.map((o) => optimizeSchema(o, optimizations));
     const anyOptimized = optimizedOptions.some((o, i) => o !== options[i]);
-
 
     // (all options are objects with a common field literal)
     const discriminatorKey = detectDiscriminatorKey(options);
@@ -541,11 +537,9 @@ function optimizeSchema(
   return schema;
 }
 
-//discriminator detection for union 
+//discriminator detection for union
 
-function detectDiscriminatorKey(
-  options: ReadonlyArray<LoydSchema<unknown>>,
-): string | null {
+function detectDiscriminatorKey(options: ReadonlyArray<LoydSchema<unknown>>): string | null {
   if (options.length < 2) return null;
 
   for (const o of options) {
