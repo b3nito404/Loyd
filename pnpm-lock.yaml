@@ -263,7 +263,16 @@ importers:
       '@loydjs/core':
         specifier: workspace:*
         version: link:../core
+      magic-string:
+        specifier: ^0.30.21
+        version: 0.30.21
     devDependencies:
+      '@types/acorn':
+        specifier: ^6.0.4
+        version: 6.0.4
+      acorn:
+        specifier: ^8.16.0
+        version: 8.16.0
       tsup:
         specifier: ^8.3.5
         version: 8.5.1(postcss@8.5.8)(typescript@5.9.3)
@@ -965,6 +974,10 @@ packages:
     resolution: {integrity: sha512-voicVULvUV5yaGXo0Iue13BcHGYW3u0VgqSbfQwBaHbpj1zLjYV4KIe+7fYIo6DO8FVUJzxFps3ODCQG/Wy2Qw==}
     cpu: [arm64]
     os: [win32]
+
+  '@types/acorn@6.0.4':
+    resolution: {integrity: sha512-DafqcBAjbOOmgqIx3EF9EAdBKAKgspv00aQVIW3fVQ0TXo5ZPBeSRey1SboVAUzjw8Ucm7cd1gtTSlosYoEQLA==}
+    deprecated: This is a stub types definition. acorn provides its own type definitions, so you do not need this installed.
 
   '@types/aria-query@5.0.4':
     resolution: {integrity: sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==}
@@ -2431,6 +2444,10 @@ snapshots:
 
   '@turbo/windows-arm64@2.8.20':
     optional: true
+
+  '@types/acorn@6.0.4':
+    dependencies:
+      acorn: 8.16.0
 
   '@types/aria-query@5.0.4': {}
 
