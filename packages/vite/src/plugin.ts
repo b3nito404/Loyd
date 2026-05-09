@@ -3,16 +3,10 @@ import { hasLoydImports, registerModuleSchemas, transformLoydImports } from "./t
 import type { AotTransformOptions } from "./transform.js";
 
 export interface LoydVitePluginOptions extends AotTransformOptions {
-  /** Active/désactive le plugin (default: true) */
   enabled?: boolean;
-  /** Logs détaillés (default: false) */
   verbose?: boolean;
-  /** Dossier de cache des schemas pré-compilés */
   cacheDir?: string;
   /**
-   * Schemas pré-enregistrés pour la résolution statique AOT.
-   * Clé = nom du schema tel qu'il apparaît dans le source.
-   *
    * @example
    * loydPlugin({
    *   schemas: {
@@ -22,10 +16,6 @@ export interface LoydVitePluginOptions extends AotTransformOptions {
    * })
    */
   schemas?: Record<string, LoydSchema<unknown>>;
-  /**
-   * Mode AOT forcé même en dev (default: false).
-   * Par défaut, AOT est activé seulement en build production.
-   */
   forceAot?: boolean;
 }
 
@@ -42,14 +32,12 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
   let transformedCount = 0;
   let skippedCount = 0;
 
-  // Pré-enregistre les schemas fournis dans les options
   const globalSchemas = new Map<string, LoydSchema<unknown>>(Object.entries(schemas));
 
   return {
     name: "loyd-vite-plugin",
     enforce: "pre" as const,
 
-    // ── Config ──────────────────────────────────────────────────────────────
     configResolved(config: { command: string; mode: string }) {
       isBuild = config.command === "build";
 
@@ -66,20 +54,18 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
       }
     },
 
-    // ── Transform ────────────────────────────────────────────────────────────
+
     transform(code: string, id: string): { code: string; map?: string } | null {
       if (!enabled) return null;
       if (!/\.[jt]sx?$/.test(id)) return null;
       if (id.includes("node_modules")) return null;
       if (!hasLoydImports(code)) return null;
 
-      // En dev sans forceAot : on ajoute juste un marqueur mais on ne transforme pas
-      // Le JIT compiler prendra le relais au runtime — plus rapide en HMR
       if (!isBuild && !forceAot) {
         return null;
       }
 
-      // Enregistre les schemas globaux pour ce module
+
       if (globalSchemas.size > 0) {
         registerModuleSchemas(id, globalSchemas);
       }
@@ -103,7 +89,7 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
       return { code: r.code, map: r.map };
     },
 
-    // ── Build end ────────────────────────────────────────────────────────────
+
     buildEnd() {
       if (!enabled || !verbose) return;
 
@@ -114,7 +100,6 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
       }
     },
 
-    // ── HMR ──────────────────────────────────────────────────────────────────
     handleHotUpdate({ file }: { file: string }) {
       if (!enabled || !verbose) return;
       if (hasLoydImports(file)) {
