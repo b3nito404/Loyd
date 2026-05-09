@@ -13,3 +13,9 @@ export { optimize } from "./jit/optimizer.js";
 export type { AotTransformOptions, AotTransformResult, AotTransformFn } from "./aot/transform.js";
 export type { EmitOptions, EmitResult } from "./aot/emitter.js";
 export { emit } from "./aot/emitter.js";
+export {
+  generateInlineValidator,
+  registerSchema,
+  clearSchemaRegistry,
+  transformSource,
+} from "./aot/transform.js";

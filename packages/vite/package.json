@@ -1,8 +1,8 @@
 {
   "name": "@loydjs/vite",
   "version": "1.0.0",
-  "description": "Loyd vite — Vite/Rollup AOT plugin",
-  "keywords": ["loyd", "validation", "typescript", "schema"],
+  "description": "Loyd vite - Vite/Rollup AOT plugin",
+  "keywords": ["loyd", "validation", "typescript", "vite"],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -32,16 +32,19 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
+    "@loydjs/compiler": "workspace:*",
     "@loydjs/core": "workspace:*",
-    "@loydjs/compiler": "workspace:*"
+    "magic-string": "^0.30.21"
   },
   "peerDependencies": {
     "vite": ">=5.0.0"
   },
   "devDependencies": {
-    "vite": "^5.4.11",
-    "typescript": "^5.7.2",
+    "@types/acorn": "^6.0.4",
+    "acorn": "^8.16.0",
     "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
     "vitest": "^2.1.8"
   },
   "publishConfig": {
