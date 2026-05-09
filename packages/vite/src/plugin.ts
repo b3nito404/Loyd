@@ -54,7 +54,6 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
       }
     },
 
-
     transform(code: string, id: string): { code: string; map?: string } | null {
       if (!enabled) return null;
       if (!/\.[jt]sx?$/.test(id)) return null;
@@ -64,7 +63,6 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
       if (!isBuild && !forceAot) {
         return null;
       }
-
 
       if (globalSchemas.size > 0) {
         registerModuleSchemas(id, globalSchemas);
@@ -88,7 +86,6 @@ export function loydPlugin(options: LoydVitePluginOptions = {}): unknown {
 
       return { code: r.code, map: r.map };
     },
-
 
     buildEnd() {
       if (!enabled || !verbose) return;
