@@ -33,14 +33,19 @@
   },
   "dependencies": {
     "@loydjs/core": "workspace:*",
-    "@loydjs/schema": "workspace:*",
-    "@loydjs/error-engine": "workspace:*"
+    "@loydjs/error-engine": "workspace:*",
+    "@loydjs/schema": "workspace:*"
   },
   "devDependencies": {
     "@loydjs/schema": "workspace:*",
-    "typescript": "^5.7.2",
+    "@vitest/ui": "^2.1.9",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "tsup": "^8.3.5",
-    "vitest": "^2.1.8"
+    "typescript": "^5.7.2",
+    "valibot": "^1.4.0",
+    "vitest": "^2.1.9",
+    "zod": "^3.23.8"
   },
   "publishConfig": {
     "access": "public"
