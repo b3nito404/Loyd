@@ -1,11 +1,11 @@
 import type { LoydSchema } from "@loydjs/core";
+
 export interface OptimizerResult {
   schema: LoydSchema<unknown>;
   appliedOptimizations: string[];
 }
 
 export type InlinedRule =
-  // String
   | { kind: "str:minLength"; min: number }
   | { kind: "str:maxLength"; max: number }
   | { kind: "str:email" }
@@ -16,18 +16,15 @@ export type InlinedRule =
   | { kind: "str:endsWith"; suffix: string }
   | { kind: "str:includes"; sub: string }
   | { kind: "str:nonempty" }
-  // Number
   | { kind: "num:min"; min: number; inclusive: boolean }
   | { kind: "num:max"; max: number; inclusive: boolean }
   | { kind: "num:int" }
   | { kind: "num:finite" }
   | { kind: "num:safe" }
   | { kind: "num:multipleOf"; factor: number }
-  // Transform
   | { kind: "str:trim" }
   | { kind: "str:toLowerCase" }
   | { kind: "str:toUpperCase" }
-  // Unknown
   | { kind: "unknown" };
 
 export interface OptimizedStringSchema extends LoydSchema<unknown> {
@@ -72,277 +69,355 @@ export interface OptimizedUnionSchema extends LoydSchema<unknown> {
 // biome-ignore lint/suspicious/noExplicitAny: schema internals
 type S = any;
 
-const SENTINELS = {
+const STR = {
   EMPTY: "",
-  ONE_CHAR: "a",
+  ONE: "a",
+  TWO: "ab",
+  FIVE: "abcde",
   LONG: "a".repeat(10000),
-  VALID_EMAIL: "test@example.com",
-  INVALID_EMAIL: "notanemail",
-  VALID_URL: "https://example.com",
-  INVALID_URL: "notaurl",
-  VALID_UUID: "550e8400-e29b-41d4-a716-446655440000",
-  INVALID_UUID: "not-a-uuid",
-  ALL_UPPER: "HELLO",
-  ALL_LOWER: "hello",
-  WITH_SPACES: "  hello  ",
-  // Numbers
+  EMAIL_VALID: "test@example.com",
+  EMAIL_INVALID: "notanemail",
+  EMAIL_INVALID2: "no-at-sign",
+  URL_VALID: "https://example.com",
+  URL_INVALID: "notaurl",
+  UUID_VALID: "550e8400-e29b-41d4-a716-446655440000",
+  UUID_INVALID: "not-a-uuid",
+  UPPER: "HELLO",
+  LOWER: "hello",
+  SPACES: "  hello  ",
+  STARTS_TEST: "hello world",
+  NUMERIC: "12345",
+};
+
+const NUM = {
   ZERO: 0,
   ONE: 1,
   NEG_ONE: -1,
+  HALF: 0.5,
   FLOAT: 1.5,
-  LARGE: 1e20,
-  NAN: Number.NaN,
+  FLOAT2: 2.5,
+  LARGE: 1e15,
+  NEG_LARGE: -1e15,
   INF: Number.POSITIVE_INFINITY,
+  NEG_INF: Number.NEGATIVE_INFINITY,
+  NAN: Number.NaN,
+  MAX_SAFE: Number.MAX_SAFE_INTEGER,
+  MIN_SAFE: Number.MIN_SAFE_INTEGER,
+  TWO: 2,
+  THREE: 3,
+  TEN: 10,
+  HUNDRED: 100,
+  THOUSAND: 1000,
 };
 
-type StringRule = (
-  v: string,
-) => { success: boolean; issues?: Array<{ code: string; meta?: Record<string, unknown> }> } | null;
-type NumberRule = (
-  v: number,
-) => { success: boolean; issues?: Array<{ code: string; meta?: Record<string, unknown> }> } | null;
-
-function fingerprintStringRule(rule: StringRule): InlinedRule {
-  const tryRule = (v: string) => {
-    try {
-      return rule(v);
-    } catch {
-      return null;
+function callStringRule(
+  rule: (v: string) => unknown,
+  val: string,
+): { failed: boolean; code: string; meta: Record<string, unknown> } | null {
+  try {
+    const r = rule(val) as {
+      success?: boolean;
+      issues?: Array<{ code: string; meta?: Record<string, unknown> }>;
+    } | null;
+    if (r === null || r === undefined) return null;
+    if (r.success === true) return null;
+    if (r.success === false && r.issues && r.issues.length > 0) {
+      return {
+        failed: true,
+        code: r.issues[0].code,
+        meta: r.issues[0].meta ?? {},
+      };
     }
-  };
-
-  const onEmpty = tryRule(SENTINELS.EMPTY);
-  if (onEmpty && !onEmpty.success) {
-    const code = onEmpty.issues?.[0]?.code;
-    const meta = onEmpty.issues?.[0]?.meta;
-
-    if (code === "ERR_STRING_TOO_SHORT") {
-      const min = (meta?.min as number) ?? 1;
-      const onOne = tryRule(SENTINELS.ONE_CHAR);
-      if (!onOne || onOne.success !== false || (onOne.issues?.[0]?.meta?.min as number) !== min) {
-        return { kind: "str:minLength", min };
-      }
-    }
+    return null;
+  } catch {
+    return null;
   }
+}
 
-  const onLong = tryRule(SENTINELS.LONG);
-  if (onLong && !onLong.success) {
-    const code = onLong.issues?.[0]?.code;
-    const meta = onLong.issues?.[0]?.meta;
-    if (code === "ERR_STRING_TOO_SHORT") {
-      const min = (meta?.min as number) ?? 0;
+function callNumberRule(
+  rule: (v: number) => unknown,
+  val: number,
+): { failed: boolean; code: string; meta: Record<string, unknown> } | null {
+  try {
+    const r = rule(val) as {
+      success?: boolean;
+      issues?: Array<{ code: string; meta?: Record<string, unknown> }>;
+    } | null;
+    if (r === null || r === undefined) return null;
+    if (r.success === true) return null;
+    if (r.success === false && r.issues && r.issues.length > 0) {
+      return {
+        failed: true,
+        code: r.issues[0].code,
+        meta: r.issues[0].meta ?? {},
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+//fingerPrinting rule
+function fingerprintStringRule(rule: (v: string) => unknown): InlinedRule {
+  const onEmpty = callStringRule(rule, STR.EMPTY);
+  const onOne = callStringRule(rule, STR.ONE);
+  const onTwo = callStringRule(rule, STR.TWO);
+  const onFive = callStringRule(rule, STR.FIVE);
+  const onLong = callStringRule(rule, STR.LONG);
+  const onEmailValid = callStringRule(rule, STR.EMAIL_VALID);
+  const onEmailInvalid = callStringRule(rule, STR.EMAIL_INVALID);
+  const onUrlValid = callStringRule(rule, STR.URL_VALID);
+  const onUrlInvalid = callStringRule(rule, STR.URL_INVALID);
+  const onUuidValid = callStringRule(rule, STR.UUID_VALID);
+  const onUuidInvalid = callStringRule(rule, STR.UUID_INVALID);
+  const onStartsTest = callStringRule(rule, STR.STARTS_TEST);
+  const onNumeric = callStringRule(rule, STR.NUMERIC);
+
+  if (onEmpty?.code === "ERR_STRING_TOO_SHORT") {
+    const min = (onEmpty.meta.min as number) ?? 1;
+    const testPass = min <= 1 ? onOne : min <= 2 ? onTwo : min <= 5 ? onFive : null;
+    if (testPass === null) {
       return { kind: "str:minLength", min };
     }
-    if (code === "ERR_STRING_TOO_LONG") {
-      const max = (meta?.max as number) ?? 0;
-      return { kind: "str:maxLength", max };
-    }
   }
 
-  const onInvalidEmail = tryRule(SENTINELS.INVALID_EMAIL);
-  const onValidEmail = tryRule(SENTINELS.VALID_EMAIL);
-  if (
-    onInvalidEmail &&
-    !onInvalidEmail.success &&
-    onInvalidEmail.issues?.[0]?.code === "ERR_STRING_INVALID_EMAIL" &&
-    (!onValidEmail || onValidEmail.success !== false)
-  ) {
+  if (onOne?.code === "ERR_STRING_TOO_SHORT" && !onEmpty?.code) {
+    const min = (onOne.meta.min as number) ?? 2;
+    return { kind: "str:minLength", min };
+  }
+
+  if (onTwo?.code === "ERR_STRING_TOO_SHORT" && !onOne?.code) {
+    const min = (onTwo.meta.min as number) ?? 3;
+    return { kind: "str:minLength", min };
+  }
+
+  if (onFive?.code === "ERR_STRING_TOO_SHORT" && !onTwo?.code) {
+    const min = (onFive.meta.min as number) ?? 6;
+    return { kind: "str:minLength", min };
+  }
+
+  if (onLong?.code === "ERR_STRING_TOO_LONG" && !onEmpty?.code && !onOne?.code) {
+    const max = (onLong.meta.max as number) ?? 0;
+    return { kind: "str:maxLength", max };
+  }
+
+  if (onFive?.code === "ERR_STRING_TOO_LONG" && !onTwo?.code) {
+    const max = (onFive.meta.max as number) ?? 0;
+    return { kind: "str:maxLength", max };
+  }
+
+  if (onTwo?.code === "ERR_STRING_TOO_LONG" && !onOne?.code) {
+    const max = (onTwo.meta.max as number) ?? 0;
+    return { kind: "str:maxLength", max };
+  }
+
+  if (onEmailInvalid?.code === "ERR_STRING_INVALID_EMAIL" && onEmailValid === null) {
     return { kind: "str:email" };
   }
 
-  const onInvalidUrl = tryRule(SENTINELS.INVALID_URL);
-  const onValidUrl = tryRule(SENTINELS.VALID_URL);
-  if (
-    onInvalidUrl &&
-    !onInvalidUrl.success &&
-    onInvalidUrl.issues?.[0]?.code === "ERR_STRING_INVALID_URL" &&
-    (!onValidUrl || onValidUrl.success !== false)
-  ) {
+  if (onUrlInvalid?.code === "ERR_STRING_INVALID_URL" && onUrlValid === null) {
     return { kind: "str:url" };
   }
 
-  // uuid
-  const onInvalidUuid = tryRule(SENTINELS.INVALID_UUID);
-  const onValidUuid = tryRule(SENTINELS.VALID_UUID);
-  if (
-    onInvalidUuid &&
-    !onInvalidUuid.success &&
-    onInvalidUuid.issues?.[0]?.code === "ERR_STRING_INVALID_UUID" &&
-    (!onValidUuid || onValidUuid.success !== false)
-  ) {
+  if (onUuidInvalid?.code === "ERR_STRING_INVALID_UUID" && onUuidValid === null) {
     return { kind: "str:uuid" };
   }
 
-  const onOne = tryRule(SENTINELS.ONE_CHAR);
-  if (onOne && !onOne.success) {
-    const code = onOne.issues?.[0]?.code;
-    const meta = onOne.issues?.[0]?.meta;
+  if (onOne?.code === "ERR_STRING_INVALID_REGEX") {
+    const meta = onOne.meta;
+    if (meta.prefix !== undefined) return { kind: "str:startsWith", prefix: String(meta.prefix) };
+    if (meta.suffix !== undefined) return { kind: "str:endsWith", suffix: String(meta.suffix) };
+    if (meta.substring !== undefined) return { kind: "str:includes", sub: String(meta.substring) };
+    if (meta.pattern !== undefined)
+      return { kind: "str:regex", source: String(meta.pattern), flags: "" };
+  }
 
-    if (code === "ERR_STRING_INVALID_REGEX") {
-      if (meta?.prefix !== undefined) {
-        return { kind: "str:startsWith", prefix: String(meta.prefix) };
-      }
-      // endsWith
-      if (meta?.suffix !== undefined) {
-        return { kind: "str:endsWith", suffix: String(meta.suffix) };
-      }
+  if (onEmpty?.code === "ERR_STRING_INVALID_REGEX") {
+    const meta = onEmpty.meta;
+    if (meta.prefix !== undefined) return { kind: "str:startsWith", prefix: String(meta.prefix) };
+    if (meta.suffix !== undefined) return { kind: "str:endsWith", suffix: String(meta.suffix) };
+    if (meta.substring !== undefined) return { kind: "str:includes", sub: String(meta.substring) };
+    if (meta.pattern !== undefined)
+      return { kind: "str:regex", source: String(meta.pattern), flags: "" };
+  }
 
-      if (meta?.substring !== undefined) {
-        return { kind: "str:includes", sub: String(meta.substring) };
-      }
+  // startsWith/endsWith
+  if (onStartsTest?.code === "ERR_STRING_INVALID_REGEX") {
+    const meta = onStartsTest.meta;
+    if (meta.prefix !== undefined) return { kind: "str:startsWith", prefix: String(meta.prefix) };
+    if (meta.suffix !== undefined) return { kind: "str:endsWith", suffix: String(meta.suffix) };
+  }
 
-      if (meta?.pattern !== undefined) {
-        return { kind: "str:regex", source: String(meta.pattern), flags: "" };
-      }
-    }
-
-    if (code === "ERR_STRING_TOO_SHORT") {
-      const min = (meta?.min as number) ?? 1;
-      return { kind: "str:minLength", min };
-    }
+  if (onNumeric?.code === "ERR_STRING_INVALID_REGEX") {
+    const meta = onNumeric.meta;
+    if (meta.pattern !== undefined)
+      return { kind: "str:regex", source: String(meta.pattern), flags: "" };
   }
 
   return { kind: "unknown" };
 }
 
-function fingerprintNumberRule(rule: NumberRule): InlinedRule {
-  const tryRule = (v: number) => {
-    try {
-      return rule(v);
-    } catch {
-      return null;
-    }
-  };
+function fingerprintNumberRule(rule: (v: number) => unknown): InlinedRule {
+  const onZero = callNumberRule(rule, NUM.ZERO);
+  const onOne = callNumberRule(rule, NUM.ONE);
+  const onNegOne = callNumberRule(rule, NUM.NEG_ONE);
+  const onHalf = callNumberRule(rule, NUM.HALF);
+  const onFloat = callNumberRule(rule, NUM.FLOAT);
+  const _onFloat2 = callNumberRule(rule, NUM.FLOAT2);
+  const onLarge = callNumberRule(rule, NUM.LARGE);
+  const onNegLarge = callNumberRule(rule, NUM.NEG_LARGE);
+  const onInf = callNumberRule(rule, NUM.INF);
+  const onNegInf = callNumberRule(rule, NUM.NEG_INF);
+  const onTwo = callNumberRule(rule, NUM.TWO);
+  const onThree = callNumberRule(rule, NUM.THREE);
+  const onTen = callNumberRule(rule, NUM.TEN);
+  const onHundred = callNumberRule(rule, NUM.HUNDRED);
+  const onThousand = callNumberRule(rule, NUM.THOUSAND);
+  const onMaxSafe = callNumberRule(rule, NUM.MAX_SAFE);
 
-  // int : fail on float
-  const onFloat = tryRule(SENTINELS.FLOAT);
-  if (onFloat && !onFloat.success) {
-    const code = onFloat.issues?.[0]?.code;
-    const meta = onFloat.issues?.[0]?.meta;
-
-    if (code === "ERR_NUMBER_NOT_INTEGER") {
-      return { kind: "num:int" };
-    }
-
-    // min with value > 1.5
-    if (code === "ERR_NUMBER_TOO_SMALL") {
-      const min = (meta?.min as number) ?? 0;
-      const inclusive = (meta?.inclusive as boolean) ?? true;
-      const onLarge = tryRule(SENTINELS.LARGE);
-      if (!onLarge || onLarge.success !== false) {
-        return { kind: "num:min", min, inclusive };
-      }
-    }
-
-    if (code === "ERR_NUMBER_TOO_LARGE") {
-      const max = (meta?.max as number) ?? 0;
-      const inclusive = (meta?.inclusive as boolean) ?? true;
-      return { kind: "num:max", max, inclusive };
-    }
+  // ── int ───────────────────────────────────────────────────────────────────
+  // Échoue sur les floats, passe sur les entiers
+  if (onFloat?.code === "ERR_NUMBER_NOT_INTEGER" && onOne === null) {
+    return { kind: "num:int" };
+  }
+  if (onHalf?.code === "ERR_NUMBER_NOT_INTEGER" && onOne === null) {
+    return { kind: "num:int" };
   }
 
-  const onZero = tryRule(SENTINELS.ZERO);
-  const onNegOne = tryRule(SENTINELS.NEG_ONE);
-  const onLarge = tryRule(SENTINELS.LARGE);
-
-  if (onZero && !onZero.success) {
-    const code = onZero.issues?.[0]?.code;
-    const meta = onZero.issues?.[0]?.meta;
-
-    if (code === "ERR_NUMBER_TOO_SMALL") {
-      const min = (meta?.min as number) ?? 0;
-      const inclusive = (meta?.inclusive as boolean) ?? true;
-      return { kind: "num:min", min, inclusive };
-    }
-    if (code === "ERR_NUMBER_TOO_LARGE") {
-      const max = (meta?.max as number) ?? 0;
-      const inclusive = (meta?.inclusive as boolean) ?? true;
-      return { kind: "num:max", max, inclusive };
-    }
-    if (code === "ERR_NUMBER_NOT_MULTIPLE") {
-      const factor = (meta?.multipleOf as number) ?? 1;
-      return { kind: "num:multipleOf", factor };
-    }
+  // ── safe integer ──────────────────────────────────────────────────────────
+  if (onMaxSafe?.code === "ERR_NUMBER_NOT_INTEGER" && onOne === null && onFloat === null) {
+    return { kind: "num:safe" };
   }
 
-  if (onNegOne && !onNegOne.success) {
-    const code = onNegOne.issues?.[0]?.code;
-    const meta = onNegOne.issues?.[0]?.meta;
-
-    if (code === "ERR_NUMBER_TOO_SMALL") {
-      const min = (meta?.min as number) ?? 0;
-      const inclusive = (meta?.inclusive as boolean) ?? true;
-      return { kind: "num:min", min, inclusive };
-    }
+  // ── finite ────────────────────────────────────────────────────────────────
+  if (onInf?.code === "ERR_NUMBER_NOT_FINITE" && onOne === null) {
+    return { kind: "num:finite" };
   }
-
-  if (onLarge && !onLarge.success) {
-    const code = onLarge.issues?.[0]?.code;
-    const meta = onLarge.issues?.[0]?.meta;
-
-    if (code === "ERR_NUMBER_TOO_LARGE") {
-      const max = (meta?.max as number) ?? 0;
-      const inclusive = (meta?.inclusive as boolean) ?? true;
-      return { kind: "num:max", max, inclusive };
-    }
-    if (code === "ERR_NUMBER_NOT_FINITE") {
-      return { kind: "num:finite" };
-    }
-    if (code === "ERR_NUMBER_NOT_INTEGER") {
-      return { kind: "num:safe" };
-    }
-  }
-
-  const onInf = tryRule(SENTINELS.INF);
-  if (onInf && !onInf.success && onInf.issues?.[0]?.code === "ERR_NUMBER_NOT_FINITE") {
+  if (onNegInf?.code === "ERR_NUMBER_NOT_FINITE" && onOne === null) {
     return { kind: "num:finite" };
   }
 
+  // ── multipleOf ────────────────────────────────────────────────────────────
+  if (onOne?.code === "ERR_NUMBER_NOT_MULTIPLE" && onTwo === null) {
+    const factor = (onOne.meta.multipleOf as number) ?? 2;
+    return { kind: "num:multipleOf", factor };
+  }
+  if (onOne?.code === "ERR_NUMBER_NOT_MULTIPLE" && onThree === null) {
+    const factor = (onOne.meta.multipleOf as number) ?? 3;
+    return { kind: "num:multipleOf", factor };
+  }
+  if (onTwo?.code === "ERR_NUMBER_NOT_MULTIPLE" && onTen === null) {
+    const factor = (onTwo.meta.multipleOf as number) ?? 5;
+    return { kind: "num:multipleOf", factor };
+  }
+
+  // ── min ───────────────────────────────────────────────────────────────────
+  // Pattern : échoue sur les petits nombres, passe sur les grands
+  if (onZero?.code === "ERR_NUMBER_TOO_SMALL" && onOne === null) {
+    const min = (onZero.meta.min as number) ?? 0;
+    const inclusive = (onZero.meta.inclusive as boolean) ?? true;
+    return { kind: "num:min", min, inclusive };
+  }
+
+  if (onNegOne?.code === "ERR_NUMBER_TOO_SMALL" && onOne === null) {
+    const min = (onNegOne.meta.min as number) ?? 0;
+    const inclusive = (onNegOne.meta.inclusive as boolean) ?? true;
+    return { kind: "num:min", min, inclusive };
+  }
+
+  if (onZero?.code === "ERR_NUMBER_TOO_SMALL" && onTwo === null) {
+    const min = (onZero.meta.min as number) ?? 0;
+    const inclusive = (onZero.meta.inclusive as boolean) ?? true;
+    return { kind: "num:min", min, inclusive };
+  }
+
+  if (onTen?.code === "ERR_NUMBER_TOO_SMALL" && onHundred === null) {
+    const min = (onTen.meta.min as number) ?? 0;
+    const inclusive = (onTen.meta.inclusive as boolean) ?? true;
+    return { kind: "num:min", min, inclusive };
+  }
+
+  if (onHundred?.code === "ERR_NUMBER_TOO_SMALL" && onThousand === null) {
+    const min = (onHundred.meta.min as number) ?? 0;
+    const inclusive = (onHundred.meta.inclusive as boolean) ?? true;
+    return { kind: "num:min", min, inclusive };
+  }
+
+  if (onFloat?.code === "ERR_NUMBER_TOO_SMALL" && onLarge === null) {
+    const min = (onFloat.meta.min as number) ?? 0;
+    const inclusive = (onFloat.meta.inclusive as boolean) ?? true;
+    return { kind: "num:min", min, inclusive };
+  }
+
+  // gt(0) — échoue sur 0 et négatifs
   if (
-    onZero &&
-    !onZero.success &&
-    onNegOne &&
-    !onNegOne.success &&
-    (!onLarge || onLarge.success !== false)
+    onZero?.code === "ERR_NUMBER_TOO_SMALL" &&
+    onNegOne?.code === "ERR_NUMBER_TOO_SMALL" &&
+    onOne === null
   ) {
-    const code = onZero.issues?.[0]?.code;
-    if (code === "ERR_NUMBER_TOO_SMALL") {
-      const min = (onZero.issues?.[0]?.meta?.min as number) ?? 0;
-      const inclusive = (onZero.issues?.[0]?.meta?.inclusive as boolean) ?? false;
-      return { kind: "num:min", min, inclusive };
-    }
+    const min = (onZero.meta.min as number) ?? 0;
+    const inclusive = (onZero.meta.inclusive as boolean) ?? false;
+    return { kind: "num:min", min, inclusive };
+  }
+
+  // ── max ───────────────────────────────────────────────────────────────────
+  if (onLarge?.code === "ERR_NUMBER_TOO_LARGE" && onOne === null) {
+    const max = (onLarge.meta.max as number) ?? 0;
+    const inclusive = (onLarge.meta.inclusive as boolean) ?? true;
+    return { kind: "num:max", max, inclusive };
+  }
+
+  if (onThousand?.code === "ERR_NUMBER_TOO_LARGE" && onHundred === null) {
+    const max = (onThousand.meta.max as number) ?? 0;
+    const inclusive = (onThousand.meta.inclusive as boolean) ?? true;
+    return { kind: "num:max", max, inclusive };
+  }
+
+  if (onHundred?.code === "ERR_NUMBER_TOO_LARGE" && onTen === null) {
+    const max = (onHundred.meta.max as number) ?? 0;
+    const inclusive = (onHundred.meta.inclusive as boolean) ?? true;
+    return { kind: "num:max", max, inclusive };
+  }
+
+  if (onTen?.code === "ERR_NUMBER_TOO_LARGE" && onOne === null) {
+    const max = (onTen.meta.max as number) ?? 0;
+    const inclusive = (onTen.meta.inclusive as boolean) ?? true;
+    return { kind: "num:max", max, inclusive };
+  }
+
+  if (onNegOne?.code === "ERR_NUMBER_TOO_LARGE" && onNegLarge === null) {
+    const max = (onNegOne.meta.max as number) ?? 0;
+    const inclusive = (onNegOne.meta.inclusive as boolean) ?? true;
+    return { kind: "num:max", max, inclusive };
   }
 
   return { kind: "unknown" };
 }
 
+// ─── Fingerprint string transform ─────────────────────────────────────────────
 function fingerprintStringTransform(transform: (s: string) => string): InlinedRule {
   try {
-    const withSpaces = transform(SENTINELS.WITH_SPACES);
-    if (withSpaces === SENTINELS.WITH_SPACES.trim()) return { kind: "str:trim" };
-
-    const upper = transform(SENTINELS.ALL_LOWER);
-    if (upper === SENTINELS.ALL_LOWER.toUpperCase()) return { kind: "str:toUpperCase" };
-
-    const lower = transform(SENTINELS.ALL_UPPER);
-    if (lower === SENTINELS.ALL_UPPER.toLowerCase()) return { kind: "str:toLowerCase" };
+    if (transform(STR.SPACES) === STR.SPACES.trim()) return { kind: "str:trim" };
+    if (transform(STR.LOWER) === STR.LOWER.toUpperCase()) return { kind: "str:toUpperCase" };
+    if (transform(STR.UPPER) === STR.UPPER.toLowerCase()) return { kind: "str:toLowerCase" };
   } catch {
     // ignore
   }
   return { kind: "unknown" };
 }
 
+// ─── Flatten pipe ─────────────────────────────────────────────────────────────
 function flattenPipe(schema: LoydSchema<unknown>): LoydSchema<unknown>[] {
   if (schema._type !== "pipe") return [schema];
   const schemas = (schema as S)._schemas as ReadonlyArray<LoydSchema<unknown>>;
   if (!schemas) return [schema];
   const result: LoydSchema<unknown>[] = [];
-  for (const s of schemas) {
-    result.push(...flattenPipe(s));
-  }
+  for (const s of schemas) result.push(...flattenPipe(s));
   return result;
 }
 
+// Optimize schema
 function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): LoydSchema<unknown> {
   const t = schema._type;
 
@@ -350,16 +425,14 @@ function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): L
     const rules: Array<(v: string) => unknown> = (schema as S)._rules ?? [];
     const transforms: Array<(s: string) => string> = (schema as S)._transforms ?? [];
 
-    if (rules.length === 0 && transforms.length === 0) {
-      return schema;
-    }
+    if (rules.length === 0 && transforms.length === 0) return schema;
 
     const inlinedRules: InlinedRule[] = [];
     const inlinedTransforms: InlinedRule[] = [];
     let hasUnknownRules = false;
 
     for (const rule of rules) {
-      const inlined = fingerprintStringRule(rule as StringRule);
+      const inlined = fingerprintStringRule(rule);
       inlinedRules.push(inlined);
       if (inlined.kind === "unknown") hasUnknownRules = true;
     }
@@ -374,11 +447,8 @@ function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): L
       inlinedRules.filter((r) => r.kind !== "unknown").length +
       inlinedTransforms.filter((r) => r.kind !== "unknown").length;
 
-    if (inlinedCount > 0) {
-      optimizations.push(`string:inline-${inlinedCount}-rules`);
-    }
+    if (inlinedCount > 0) optimizations.push(`string:inline-${inlinedCount}-rules`);
 
-    // Return  schema with structured rules
     return Object.assign(Object.create(Object.getPrototypeOf(schema) as object), schema, {
       _inlinedRules: inlinedRules,
       _inlinedTransforms: inlinedTransforms,
@@ -395,15 +465,13 @@ function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): L
     let hasUnknownRules = false;
 
     for (const rule of rules) {
-      const inlined = fingerprintNumberRule(rule as NumberRule);
+      const inlined = fingerprintNumberRule(rule);
       inlinedRules.push(inlined);
       if (inlined.kind === "unknown") hasUnknownRules = true;
     }
 
     const inlinedCount = inlinedRules.filter((r) => r.kind !== "unknown").length;
-    if (inlinedCount > 0) {
-      optimizations.push(`number:inline-${inlinedCount}-rules`);
-    }
+    if (inlinedCount > 0) optimizations.push(`number:inline-${inlinedCount}-rules`);
 
     return Object.assign(Object.create(Object.getPrototypeOf(schema) as object), schema, {
       _inlinedRules: inlinedRules,
@@ -415,9 +483,7 @@ function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): L
     const shape = (schema as S).shape as Record<string, LoydSchema<unknown>>;
     if (!shape) return schema;
 
-    //avoid Object.keys() at runtime
     const precomputedKeys = Object.keys(shape);
-
     const optimizedShape: Record<string, LoydSchema<unknown>> = {};
     let shapeOptimized = false;
 
@@ -427,7 +493,7 @@ function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): L
       if (optimized !== shape[key]) shapeOptimized = true;
     }
 
-    if (shapeOptimized || precomputedKeys.length > 0) {
+    if (precomputedKeys.length > 0) {
       optimizations.push(`object:precompute-${precomputedKeys.length}-keys`);
     }
 
@@ -457,26 +523,17 @@ function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): L
     const schemas = (schema as S)._schemas as ReadonlyArray<LoydSchema<unknown>>;
     if (!schemas) return schema;
 
-    // Flatten for nested pipes : pipe(pipe(a, b), c) - > [a, b, c]
     const flat = flattenPipe(schema);
     const wasNested = flat.length !== schemas.length;
-
     const optimizedFlat = flat.map((s) => optimizeSchema(s, optimizations));
     const anyOptimized = optimizedFlat.some((s, i) => s !== flat[i]);
 
     if (wasNested) optimizations.push("pipe:flatten-nested");
     if (anyOptimized) optimizations.push("pipe:optimize-schemas");
 
-    if (wasNested || anyOptimized) {
-      return Object.assign(Object.create(Object.getPrototypeOf(schema) as object), schema, {
-        _schemas: optimizedFlat,
-        _flatSchemas: optimizedFlat,
-      }) as OptimizedPipeSchema;
-    }
-
-    // _flatSchemas
     return Object.assign(Object.create(Object.getPrototypeOf(schema) as object), schema, {
-      _flatSchemas: flat,
+      _schemas: wasNested || anyOptimized ? optimizedFlat : flat,
+      _flatSchemas: wasNested || anyOptimized ? optimizedFlat : flat,
     }) as OptimizedPipeSchema;
   }
 
@@ -496,10 +553,10 @@ function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): L
   if (t === "union") {
     const options = (schema as S)._options as ReadonlyArray<LoydSchema<unknown>>;
     if (!options) return schema;
+
     const optimizedOptions = options.map((o) => optimizeSchema(o, optimizations));
     const anyOptimized = optimizedOptions.some((o, i) => o !== options[i]);
 
-    // (all options are objects with a common field literal)
     const discriminatorKey = detectDiscriminatorKey(options);
     if (discriminatorKey) {
       optimizations.push(`union:discriminate-on-${discriminatorKey}`);
@@ -537,8 +594,7 @@ function optimizeSchema(schema: LoydSchema<unknown>, optimizations: string[]): L
   return schema;
 }
 
-//discriminator detection for union
-
+//Discriminated union detection
 function detectDiscriminatorKey(options: ReadonlyArray<LoydSchema<unknown>>): string | null {
   if (options.length < 2) return null;
 
@@ -565,7 +621,7 @@ function detectDiscriminatorKey(options: ReadonlyArray<LoydSchema<unknown>>): st
       }
       const val = (shape[key] as S).value;
       if (values.has(val)) {
-        allLiteral = false; // duplicated value
+        allLiteral = false;
         break;
       }
       values.add(val);
@@ -592,7 +648,6 @@ function buildDiscriminatorMap(
 }
 
 //entry point
-
 export function optimize(schema: LoydSchema<unknown>): OptimizerResult {
   const appliedOptimizations: string[] = [];
   const optimized = optimizeSchema(schema, appliedOptimizations);
