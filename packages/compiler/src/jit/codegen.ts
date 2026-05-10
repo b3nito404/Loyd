@@ -42,44 +42,27 @@ function pathConcat(ctx: Ctx, issPath: string): string {
   return `[${ctx.pathParts.join(",")}].concat(${issPath})`;
 }
 
-// Retourne true si le schema peut muter sa valeur (transforms, delegates).
-// Si false, on peut skip le write-back __obj__[key] = fv.
 function schemaHasSideEffects(schema: LoydSchema<unknown>): boolean {
   const t = schema._type;
   const s = schema as SchemaInternal;
 
   if (t === "string") {
-    // Transforms mutent la valeur
     if ((s._transforms?.length ?? 0) > 0) return true;
-    // Si inlined et pas de transforms : pas de side effects
     if (s._inlinedRules !== undefined) return s._hasUnknownRules === true;
-    // Pas optimisé mais a des rules → delegate possible
     return (s._rules?.length ?? 0) > 0;
   }
-
-  if (t === "number" || t === "boolean" || t === "literal") {
-    // Ces types ne mutent jamais leur valeur
-    return false;
-  }
-
-  if (t === "object" || t === "array") {
-    // Objects et arrays réassignent leur valeur si valide
-    return true;
-  }
-
+  if (t === "number" || t === "boolean" || t === "literal") return false;
+  if (t === "object" || t === "array") return true;
   if (t === "optional" || t === "nullable" || t === "nullish") {
     const inner = s._inner as LoydSchema<unknown> | undefined;
     if (!inner) return false;
     return schemaHasSideEffects(inner);
   }
-
   if (t === "brand") {
     const inner = s._inner as LoydSchema<unknown> | undefined;
     if (!inner) return false;
     return schemaHasSideEffects(inner);
   }
-
-  // delegate, pipe, union → side effects possibles
   return true;
 }
 
@@ -103,6 +86,10 @@ function gen(schema: LoydSchema<unknown>, ctx: Ctx): void {
   }
   if (t === "array") {
     genArr(schema, ctx);
+    return;
+  }
+  if (t === "union") {
+    genUnion(schema, ctx);
     return;
   }
   if (t === "optional") {
@@ -143,44 +130,28 @@ function genStr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const pl = pathLiteral(ctx);
 
   const inlined = s._inlinedRules as Array<{ kind: string; [k: string]: unknown }> | undefined;
-
-  // Calcule si on a des règles à émettre dans le else branch
-  const hasInlinedRules = inlined ? inlined.length > 0 : false;
-  const hasInlinedTransforms = inlined
-    ? ((s._inlinedTransforms as Array<unknown> | undefined)?.length ?? 0) > 0
-    : false;
-  const hasDelegate = inlined ? s._hasUnknownRules === true : rules.length > 0 || hasTransforms;
-
-  const hasElseContent = hasInlinedRules || hasInlinedTransforms || hasDelegate;
+  const hasInlinedContent = inlined
+    ? inlined.length > 0 ||
+      ((s._inlinedTransforms as unknown[] | undefined)?.length ?? 0) > 0 ||
+      s._hasUnknownRules
+    : rules.length > 0 || hasTransforms;
 
   emit(ctx, `if (typeof ${v} !== "string") {`);
   emit(ctx, `  ${iss}.push({ code: "ERR_STRING_INVALID_TYPE", path: ${pl} });`);
 
-  if (hasElseContent) {
+  if (hasInlinedContent) {
     emit(ctx, "} else {");
-
     if (inlined) {
-      for (const rule of inlined) {
-        emitStringInlinedRule(rule, v, iss, pl, ctx);
-      }
+      for (const rule of inlined) emitStringInlinedRule(rule, v, iss, pl, ctx);
       const transforms = s._inlinedTransforms as Array<{ kind: string }> | undefined;
-      if (transforms) {
-        for (const t of transforms) {
-          emitStringTransformInlined(t, v, ctx);
-        }
-      }
-      if (s._hasUnknownRules) {
-        emitStringDelegate(schema, v, iss, ctx);
-      }
+      if (transforms) for (const t of transforms) emitStringTransformInlined(t, v, ctx);
+      if (s._hasUnknownRules) emitStringDelegate(schema, v, iss, ctx);
     } else if (rules.length > 0 || hasTransforms) {
       emitStringDelegate(schema, v, iss, ctx);
     }
-
-    emit(ctx, "}");
-  } else {
-    // Pas de contenu dans le else — ferme juste le if
-    emit(ctx, "}");
   }
+
+  emit(ctx, "}");
 }
 
 function emitStringInlinedRule(
@@ -297,22 +268,15 @@ function genNum(schema: LoydSchema<unknown>, ctx: Ctx): void {
 
   if (hasElseContent) {
     emit(ctx, "} else {");
-
     if (inlined) {
-      for (const rule of inlined) {
-        emitNumberInlinedRule(rule, v, iss, pl, ctx);
-      }
-      if (s._hasUnknownRules) {
-        emitNumberDelegate(schema, v, iss, ctx);
-      }
+      for (const rule of inlined) emitNumberInlinedRule(rule, v, iss, pl, ctx);
+      if (s._hasUnknownRules) emitNumberDelegate(schema, v, iss, ctx);
     } else if (rules.length > 0) {
       emitNumberDelegate(schema, v, iss, ctx);
     }
-
-    emit(ctx, "}");
-  } else {
-    emit(ctx, "}");
   }
+
+  emit(ctx, "}");
 }
 
 function emitNumberInlinedRule(
@@ -422,15 +386,13 @@ function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
   emit(ctx, `  const ${pl2} = ${iss}.length;`);
 
   for (const key of keys) {
-    const fv = tmpVar(ctx, `f${key.replace(/\W/g, "_")}`);
-    const keyLit = JSON.stringify(key);
     const fieldSchema = shape[key] as LoydSchema<unknown>;
     const hasSideEffects = schemaHasSideEffects(fieldSchema);
+    const keyLit = JSON.stringify(key);
 
     if (hasSideEffects) {
-      // Field peut muter sa valeur — on lit dans une var et on réécrit
+      const fv = tmpVar(ctx, `f${key.replace(/\W/g, "_")}`);
       emit(ctx, `  let ${fv} = ${obj}[${keyLit}];`);
-
       const childCtx: Ctx = {
         ...ctx,
         lines: [],
@@ -440,12 +402,10 @@ function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
       };
       gen(fieldSchema, childCtx);
       for (const l of childCtx.lines) emit(ctx, `  ${l}`);
-
       emit(ctx, `  ${obj}[${keyLit}] = ${fv};`);
     } else {
-      // Field ne peut pas muter sa valeur — validation in-place, skip le write-back
+      const fv = tmpVar(ctx, `f${key.replace(/\W/g, "_")}`);
       emit(ctx, `  const ${fv} = ${obj}[${keyLit}];`);
-
       const childCtx: Ctx = {
         ...ctx,
         lines: [],
@@ -455,7 +415,6 @@ function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
       };
       gen(fieldSchema, childCtx);
       for (const l of childCtx.lines) emit(ctx, `  ${l}`);
-      // Pas de write-back — zéro property write sur le chemin valide
     }
   }
 
@@ -486,7 +445,6 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const s = schema as SchemaInternal;
   const pl = pathLiteral(ctx);
   const i = tmpVar(ctx, "i");
-  const el = tmpVar(ctx, "el");
   const elementSchema = s.element as LoydSchema<unknown> | undefined;
   const elementHasSideEffects = elementSchema ? schemaHasSideEffects(elementSchema) : false;
 
@@ -511,8 +469,8 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
     emit(ctx, `  for (let ${i} = 0; ${i} < ${v}.length; ${i}++) {`);
 
     if (elementHasSideEffects) {
+      const el = tmpVar(ctx, "el");
       emit(ctx, `    let ${el} = ${v}[${i}];`);
-
       const childCtx: Ctx = {
         ...ctx,
         lines: [],
@@ -522,15 +480,12 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
       };
       gen(elementSchema, childCtx);
       for (const l of childCtx.lines) emit(ctx, `    ${l}`);
-
       emit(ctx, `    ${v}[${i}] = ${el};`);
     } else {
-      // Element ne mute pas — validation in-place directement sur v[i]
-      const elDirect = `${v}[${i}]`;
       const childCtx: Ctx = {
         ...ctx,
         lines: [],
-        value: elDirect,
+        value: `${v}[${i}]`,
         pathParts: [...ctx.pathParts, i],
         schemaRefs: ctx.schemaRefs,
       };
@@ -542,6 +497,63 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   }
 
   emit(ctx, "}");
+}
+
+function genUnion(schema: LoydSchema<unknown>, ctx: Ctx): void {
+  const { value: v, issues: iss } = ctx;
+  const s = schema as SchemaInternal;
+  const pl = pathLiteral(ctx);
+
+  // Discriminated union — O(1) Map lookup, zéro itération
+  if (s._discriminatorKey && s._discriminatorMap) {
+    const key = JSON.stringify(s._discriminatorKey);
+    const id = reg(ctx, schema);
+    const disc = tmpVar(ctx, "disc");
+    const matched = tmpVar(ctx, "matched");
+    const r = tmpVar(ctx, "ur");
+
+    emit(ctx, `if (typeof ${v} !== "object" || ${v} === null) {`);
+    emit(ctx, `  ${iss}.push({ code: "ERR_OBJECT_INVALID_TYPE", path: ${pl} });`);
+    emit(ctx, "} else {");
+    emit(ctx, `  const ${disc} = ${v}[${key}];`);
+    emit(
+      ctx,
+      `  const ${matched} = __schemas__[${JSON.stringify(id)}]._discriminatorMap.get(${disc});`,
+    );
+    emit(ctx, `  if (!${matched}) {`);
+    emit(
+      ctx,
+      `    ${iss}.push({ code: "ERR_DISCRIMINATED_UNION_INVALID_KEY", path: ${pl}, meta: { key: ${key}, received: ${disc} } });`,
+    );
+    emit(ctx, "  } else {");
+    emit(ctx, `    const ${r} = ${matched}.safeParse(${v});`);
+    emit(
+      ctx,
+      `    if (!${r}.success) { for (let __ui__ = 0; __ui__ < ${r}.issues.length; __ui__++) { const __uiss__ = ${r}.issues[__ui__]; ${iss}.push({ code: __uiss__.code, path: ${pathConcat(ctx, "__uiss__.path")}, meta: __uiss__.meta }); } } else { ${v} = ${r}.data; }`,
+    );
+    emit(ctx, "  }");
+    emit(ctx, "}");
+    return;
+  }
+
+  // Union normale — essaie chaque option, prend la première qui passe
+  const options = s._options as ReadonlyArray<LoydSchema<unknown>> | undefined;
+  if (!options || options.length === 0) {
+    emit(ctx, `${iss}.push({ code: "ERR_UNION_NO_MATCH", path: ${pl} });`);
+    return;
+  }
+
+  const matched2 = tmpVar(ctx, "um");
+  emit(ctx, `let ${matched2} = false;`);
+  for (const option of options) {
+    const id = reg(ctx, option);
+    const r = tmpVar(ctx, "ur");
+    emit(
+      ctx,
+      `if (!${matched2}) { const ${r} = __schemas__[${JSON.stringify(id)}].safeParse(${v}); if (${r}.success) { ${v} = ${r}.data; ${matched2} = true; } }`,
+    );
+  }
+  emit(ctx, `if (!${matched2}) { ${iss}.push({ code: "ERR_UNION_NO_MATCH", path: ${pl} }); }`);
 }
 
 function genOpt(schema: LoydSchema<unknown>, ctx: Ctx): void {

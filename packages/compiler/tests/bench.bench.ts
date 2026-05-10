@@ -53,9 +53,9 @@ const invalidLargeArray = Array.from({ length: 1000 }, (_, i) => ({
   active: i % 2 === 0,
 }));
 
-// ─── Schema definitions ───────────────────────────────────────────────────────
+//*Schema definitions
 
-// ── 1. Simple string ──────────────────────────────────────────────────────────
+//Simple string
 
 const LoydSimpleString = string().minLength(1).maxLength(100);
 const LoydSimpleStringCompiled = compile(LoydSimpleString);
@@ -64,7 +64,7 @@ const ValibotSimpleString = v.pipe(v.string(), v.minLength(1), v.maxLength(100))
 const ZodSimpleString = z.string().min(1).max(100);
 const AjvSimpleString = ajv.compile({ type: "string", minLength: 1, maxLength: 100 });
 
-// ── 2. Simple number ──────────────────────────────────────────────────────────
+//Simple number
 
 const LoydNumber = number().min(0).max(120).int();
 const LoydNumberCompiled = compile(LoydNumber);
@@ -73,7 +73,7 @@ const ValibotNumber = v.pipe(v.number(), v.minValue(0), v.maxValue(120), v.integ
 const ZodNumber = z.number().min(0).max(120).int();
 const AjvNumber = ajv.compile({ type: "integer", minimum: 0, maximum: 120 });
 
-// ── 3. Flat object ────────────────────────────────────────────────────────────
+//Flat object
 
 const LoydUser = object({
   name: string().minLength(1).maxLength(100),
@@ -102,7 +102,7 @@ const AjvUser = ajv.compile({
   required: ["name", "age", "email"],
 });
 
-// ── 4. Deep nested object ─────────────────────────────────────────────────────
+//Deep nested object
 
 const LoydDeep = object({
   id: string().uuid(),
@@ -126,6 +126,7 @@ const LoydDeep = object({
   score: number().min(0),
 });
 const LoydDeepCompiled = compile(LoydDeep);
+
 const ValibotDeep = v.object({
   id: v.pipe(v.string(), v.uuid()),
   profile: v.object({
@@ -206,8 +207,7 @@ const AjvDeep = ajv.compile({
   required: ["id", "profile", "settings", "tags", "score"],
 });
 
-// ── 5. Array of objects ───────────────────────────────────────────────────────
-
+//Array of objects
 const LoydUserItem = object({
   id: number().int().min(0),
   name: string().minLength(1),
@@ -278,7 +278,7 @@ const ZodShape = z.discriminatedUnion("kind", [
 const circleData = { kind: "circle", radius: 5 };
 const rectData = { kind: "rect", width: 10, height: 20 };
 
-// String validation
+//String validation
 describe("string — minLength + maxLength (valid)", () => {
   bench("Loyd JIT", () => {
     LoydSimpleString.safeParse("hello world");
@@ -352,7 +352,7 @@ describe("number — min + max + int (invalid — float)", () => {
   });
 });
 
-// Flat object - valid
+//Flat object — valid
 describe("object flat — 3 fields (valid)", () => {
   bench("Loyd JIT", () => {
     LoydUser.safeParse(simpleUser);
@@ -389,7 +389,7 @@ describe("object flat — 3 fields (invalid — all wrong)", () => {
   });
 });
 
-// Deep nested object
+//Deep nested object
 describe("object deep nested — 5 levels (valid)", () => {
   bench("Loyd JIT", () => {
     LoydDeep.safeParse(deepObject);
@@ -426,7 +426,7 @@ describe("object deep nested — 5 levels (invalid — wrong type at root)", () 
   });
 });
 
-//Large array  1000 items
+// Large array 1000 items
 describe("array — 1000 valid items", () => {
   bench("Loyd JIT", () => {
     LoydLargeArray.safeParse(largeArray);
@@ -463,7 +463,7 @@ describe("array — 1000 items with ~30% invalid", () => {
   });
 });
 
-//Union
+// Union
 describe("union — 3 variants discriminated (valid — first variant)", () => {
   bench("Loyd JIT", () => {
     LoydShape.safeParse(circleData);
@@ -494,7 +494,7 @@ describe("union — 3 variants discriminated (valid — last variant)", () => {
   });
 });
 
-//Type check only  worst case overhead
+//Type check only
 describe("type check only — string (no rules)", () => {
   const LoydStr = string();
   const LoydStrCompiled = compile(LoydStr);
