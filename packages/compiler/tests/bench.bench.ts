@@ -247,7 +247,7 @@ const AjvLargeArray = ajv.compile({
   },
 });
 
-//Union / discriminated union 
+//Union / discriminated union
 
 const LoydShape = union([
   object({ kind: literal("circle"), radius: number().min(0) }),
@@ -278,9 +278,7 @@ const ZodShape = z.discriminatedUnion("kind", [
 const circleData = { kind: "circle", radius: 5 };
 const rectData = { kind: "rect", width: 10, height: 20 };
 
-
-
-// String validation 
+// String validation
 describe("string — minLength + maxLength (valid)", () => {
   bench("Loyd JIT", () => {
     LoydSimpleString.safeParse("hello world");
@@ -317,7 +315,7 @@ describe("string — minLength + maxLength (invalid)", () => {
   });
 });
 
-//Number validation 
+//Number validation
 describe("number — min + max + int (valid)", () => {
   bench("Loyd JIT", () => {
     LoydNumber.safeParse(42);
@@ -354,7 +352,7 @@ describe("number — min + max + int (invalid — float)", () => {
   });
 });
 
-// Flat object - valid 
+// Flat object - valid
 describe("object flat — 3 fields (valid)", () => {
   bench("Loyd JIT", () => {
     LoydUser.safeParse(simpleUser);
@@ -428,7 +426,7 @@ describe("object deep nested — 5 levels (invalid — wrong type at root)", () 
   });
 });
 
-//Large array  1000 items 
+//Large array  1000 items
 describe("array — 1000 valid items", () => {
   bench("Loyd JIT", () => {
     LoydLargeArray.safeParse(largeArray);
@@ -496,7 +494,7 @@ describe("union — 3 variants discriminated (valid — last variant)", () => {
   });
 });
 
-//Type check only  worst case overhead 
+//Type check only  worst case overhead
 describe("type check only — string (no rules)", () => {
   const LoydStr = string();
   const LoydStrCompiled = compile(LoydStr);
