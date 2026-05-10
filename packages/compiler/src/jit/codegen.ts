@@ -85,14 +85,38 @@ function schemaHasSideEffects(schema: LoydSchema<unknown>): boolean {
 
 function gen(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const t = schema._type;
-  if (t === "string") { genStr(schema, ctx); return; }
-  if (t === "number") { genNum(schema, ctx); return; }
-  if (t === "boolean") { genBool(ctx); return; }
-  if (t === "object") { genObj(schema, ctx); return; }
-  if (t === "array") { genArr(schema, ctx); return; }
-  if (t === "optional") { genOpt(schema, ctx); return; }
-  if (t === "literal") { genLit(schema, ctx); return; }
-  if (t === "nullable" || t === "nullish") { genNullable(schema, ctx); return; }
+  if (t === "string") {
+    genStr(schema, ctx);
+    return;
+  }
+  if (t === "number") {
+    genNum(schema, ctx);
+    return;
+  }
+  if (t === "boolean") {
+    genBool(ctx);
+    return;
+  }
+  if (t === "object") {
+    genObj(schema, ctx);
+    return;
+  }
+  if (t === "array") {
+    genArr(schema, ctx);
+    return;
+  }
+  if (t === "optional") {
+    genOpt(schema, ctx);
+    return;
+  }
+  if (t === "literal") {
+    genLit(schema, ctx);
+    return;
+  }
+  if (t === "nullable" || t === "nullish") {
+    genNullable(schema, ctx);
+    return;
+  }
   if (t === "brand") {
     const inner = (schema as SchemaInternal)._inner;
     if (inner) gen(inner as LoydSchema<unknown>, ctx);
@@ -125,9 +149,7 @@ function genStr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const hasInlinedTransforms = inlined
     ? ((s._inlinedTransforms as Array<unknown> | undefined)?.length ?? 0) > 0
     : false;
-  const hasDelegate = inlined
-    ? s._hasUnknownRules === true
-    : rules.length > 0 || hasTransforms;
+  const hasDelegate = inlined ? s._hasUnknownRules === true : rules.length > 0 || hasTransforms;
 
   const hasElseContent = hasInlinedRules || hasInlinedTransforms || hasDelegate;
 
@@ -170,34 +192,64 @@ function emitStringInlinedRule(
 ): void {
   switch (rule.kind) {
     case "str:minLength":
-      emit(ctx, `  if (${v}.length < ${rule.min}) { ${iss}.push({ code: "ERR_STRING_TOO_SHORT", path: ${pl}, meta: { min: ${rule.min}, actual: ${v}.length } }); }`);
+      emit(
+        ctx,
+        `  if (${v}.length < ${rule.min}) { ${iss}.push({ code: "ERR_STRING_TOO_SHORT", path: ${pl}, meta: { min: ${rule.min}, actual: ${v}.length } }); }`,
+      );
       break;
     case "str:maxLength":
-      emit(ctx, `  if (${v}.length > ${rule.max}) { ${iss}.push({ code: "ERR_STRING_TOO_LONG", path: ${pl}, meta: { max: ${rule.max}, actual: ${v}.length } }); }`);
+      emit(
+        ctx,
+        `  if (${v}.length > ${rule.max}) { ${iss}.push({ code: "ERR_STRING_TOO_LONG", path: ${pl}, meta: { max: ${rule.max}, actual: ${v}.length } }); }`,
+      );
       break;
     case "str:email":
-      emit(ctx, `  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_EMAIL", path: ${pl} }); }`);
+      emit(
+        ctx,
+        `  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_EMAIL", path: ${pl} }); }`,
+      );
       break;
     case "str:url":
-      emit(ctx, `  if (!/^https?:\\/\\/[^\\s$.?#].[^\\s]*$/i.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_URL", path: ${pl} }); }`);
+      emit(
+        ctx,
+        `  if (!/^https?:\\/\\/[^\\s$.?#].[^\\s]*$/i.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_URL", path: ${pl} }); }`,
+      );
       break;
     case "str:uuid":
-      emit(ctx, `  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_UUID", path: ${pl} }); }`);
+      emit(
+        ctx,
+        `  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_UUID", path: ${pl} }); }`,
+      );
       break;
     case "str:regex":
-      emit(ctx, `  if (!/${rule.source}/${rule.flags}.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pl} }); }`);
+      emit(
+        ctx,
+        `  if (!/${rule.source}/${rule.flags}.test(${v})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pl} }); }`,
+      );
       break;
     case "str:startsWith":
-      emit(ctx, `  if (!${v}.startsWith(${JSON.stringify(rule.prefix)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pl}, meta: { prefix: ${JSON.stringify(rule.prefix)} } }); }`);
+      emit(
+        ctx,
+        `  if (!${v}.startsWith(${JSON.stringify(rule.prefix)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pl}, meta: { prefix: ${JSON.stringify(rule.prefix)} } }); }`,
+      );
       break;
     case "str:endsWith":
-      emit(ctx, `  if (!${v}.endsWith(${JSON.stringify(rule.suffix)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pl}, meta: { suffix: ${JSON.stringify(rule.suffix)} } }); }`);
+      emit(
+        ctx,
+        `  if (!${v}.endsWith(${JSON.stringify(rule.suffix)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pl}, meta: { suffix: ${JSON.stringify(rule.suffix)} } }); }`,
+      );
       break;
     case "str:includes":
-      emit(ctx, `  if (!${v}.includes(${JSON.stringify(rule.sub)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pl}, meta: { substring: ${JSON.stringify(rule.sub)} } }); }`);
+      emit(
+        ctx,
+        `  if (!${v}.includes(${JSON.stringify(rule.sub)})) { ${iss}.push({ code: "ERR_STRING_INVALID_REGEX", path: ${pl}, meta: { substring: ${JSON.stringify(rule.sub)} } }); }`,
+      );
       break;
     case "str:nonempty":
-      emit(ctx, `  if (${v}.length === 0) { ${iss}.push({ code: "ERR_STRING_TOO_SHORT", path: ${pl}, meta: { min: 1, actual: 0 } }); }`);
+      emit(
+        ctx,
+        `  if (${v}.length === 0) { ${iss}.push({ code: "ERR_STRING_TOO_SHORT", path: ${pl}, meta: { min: 1, actual: 0 } }); }`,
+      );
       break;
     default:
       break;
@@ -236,9 +288,7 @@ function genNum(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const pl = pathLiteral(ctx);
 
   const inlined = s._inlinedRules as Array<{ kind: string; [k: string]: unknown }> | undefined;
-  const hasElseContent = inlined
-    ? inlined.length > 0 || s._hasUnknownRules
-    : rules.length > 0;
+  const hasElseContent = inlined ? inlined.length > 0 || s._hasUnknownRules : rules.length > 0;
 
   emit(ctx, `if (typeof ${v} !== "number") {`);
   emit(ctx, `  ${iss}.push({ code: "ERR_NUMBER_INVALID_TYPE", path: ${pl} });`);
@@ -275,25 +325,43 @@ function emitNumberInlinedRule(
   switch (rule.kind) {
     case "num:min": {
       const op = rule.inclusive ? "<" : "<=";
-      emit(ctx, `  if (${v} ${op} ${rule.min}) { ${iss}.push({ code: "ERR_NUMBER_TOO_SMALL", path: ${pl}, meta: { min: ${rule.min}, actual: ${v}, inclusive: ${rule.inclusive} } }); }`);
+      emit(
+        ctx,
+        `  if (${v} ${op} ${rule.min}) { ${iss}.push({ code: "ERR_NUMBER_TOO_SMALL", path: ${pl}, meta: { min: ${rule.min}, actual: ${v}, inclusive: ${rule.inclusive} } }); }`,
+      );
       break;
     }
     case "num:max": {
       const op = rule.inclusive ? ">" : ">=";
-      emit(ctx, `  if (${v} ${op} ${rule.max}) { ${iss}.push({ code: "ERR_NUMBER_TOO_LARGE", path: ${pl}, meta: { max: ${rule.max}, actual: ${v}, inclusive: ${rule.inclusive} } }); }`);
+      emit(
+        ctx,
+        `  if (${v} ${op} ${rule.max}) { ${iss}.push({ code: "ERR_NUMBER_TOO_LARGE", path: ${pl}, meta: { max: ${rule.max}, actual: ${v}, inclusive: ${rule.inclusive} } }); }`,
+      );
       break;
     }
     case "num:int":
-      emit(ctx, `  if (!Number.isInteger(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_INTEGER", path: ${pl}, meta: { actual: ${v} } }); }`);
+      emit(
+        ctx,
+        `  if (!Number.isInteger(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_INTEGER", path: ${pl}, meta: { actual: ${v} } }); }`,
+      );
       break;
     case "num:finite":
-      emit(ctx, `  if (!Number.isFinite(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_FINITE", path: ${pl}, meta: { actual: ${v} } }); }`);
+      emit(
+        ctx,
+        `  if (!Number.isFinite(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_FINITE", path: ${pl}, meta: { actual: ${v} } }); }`,
+      );
       break;
     case "num:safe":
-      emit(ctx, `  if (!Number.isSafeInteger(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_INTEGER", path: ${pl}, meta: { actual: ${v} } }); }`);
+      emit(
+        ctx,
+        `  if (!Number.isSafeInteger(${v})) { ${iss}.push({ code: "ERR_NUMBER_NOT_INTEGER", path: ${pl}, meta: { actual: ${v} } }); }`,
+      );
       break;
     case "num:multipleOf":
-      emit(ctx, `  if (${v} % ${rule.factor} !== 0) { ${iss}.push({ code: "ERR_NUMBER_NOT_MULTIPLE", path: ${pl}, meta: { multipleOf: ${rule.factor}, actual: ${v} } }); }`);
+      emit(
+        ctx,
+        `  if (${v} % ${rule.factor} !== 0) { ${iss}.push({ code: "ERR_NUMBER_NOT_MULTIPLE", path: ${pl}, meta: { multipleOf: ${rule.factor}, actual: ${v} } }); }`,
+      );
       break;
     default:
       break;
@@ -312,14 +380,20 @@ function emitNumberDelegate(schema: LoydSchema<unknown>, v: string, iss: string,
 function genBool(ctx: Ctx): void {
   const { value: v, issues: iss } = ctx;
   const pl = pathLiteral(ctx);
-  emit(ctx, `if (typeof ${v} !== "boolean") { ${iss}.push({ code: "ERR_BOOLEAN_INVALID_TYPE", path: ${pl} }); }`);
+  emit(
+    ctx,
+    `if (typeof ${v} !== "boolean") { ${iss}.push({ code: "ERR_BOOLEAN_INVALID_TYPE", path: ${pl} }); }`,
+  );
 }
 
 function genLit(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const { value: v, issues: iss } = ctx;
   const exp = JSON.stringify((schema as SchemaInternal).value);
   const pl = pathLiteral(ctx);
-  emit(ctx, `if (${v} !== ${exp}) { ${iss}.push({ code: "ERR_LITERAL_INVALID", path: ${pl}, meta: { expected: ${exp}, actual: ${v} } }); }`);
+  emit(
+    ctx,
+    `if (${v} !== ${exp}) { ${iss}.push({ code: "ERR_LITERAL_INVALID", path: ${pl}, meta: { expected: ${exp}, actual: ${v} } }); }`,
+  );
 }
 
 function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
@@ -331,7 +405,10 @@ function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
   const unknownKeys: string = s._unknownKeys ?? "strip";
 
   if (keys.length === 0) {
-    emit(ctx, `if (typeof ${v} !== "object" || ${v} === null || Array.isArray(${v})) { ${iss}.push({ code: "ERR_OBJECT_INVALID_TYPE", path: ${pl} }); }`);
+    emit(
+      ctx,
+      `if (typeof ${v} !== "object" || ${v} === null || Array.isArray(${v})) { ${iss}.push({ code: "ERR_OBJECT_INVALID_TYPE", path: ${pl} }); }`,
+    );
     return;
   }
 
@@ -387,11 +464,17 @@ function genObj(schema: LoydSchema<unknown>, ctx: Ctx): void {
     const uk = tmpVar(ctx, "uk");
     emit(ctx, `  const ${ks} = new Set(${JSON.stringify(keys)});`);
     emit(ctx, `  const ${uk} = Object.keys(${obj}).filter(k => !${ks}.has(k));`);
-    emit(ctx, `  if (${uk}.length > 0) { ${iss}.push({ code: "ERR_OBJECT_UNKNOWN_KEYS", path: ${pl}, meta: { keys: ${uk} } }); }`);
+    emit(
+      ctx,
+      `  if (${uk}.length > 0) { ${iss}.push({ code: "ERR_OBJECT_UNKNOWN_KEYS", path: ${pl}, meta: { keys: ${uk} } }); }`,
+    );
   } else if (unknownKeys === "passthrough") {
     const ks = tmpVar(ctx, "ks");
     emit(ctx, `  const ${ks} = new Set(${JSON.stringify(keys)});`);
-    emit(ctx, `  for (const __pk__ of Object.keys(${obj})) { if (!${ks}.has(__pk__)) { ${obj}[__pk__] = ${v}[__pk__]; } }`);
+    emit(
+      ctx,
+      `  for (const __pk__ of Object.keys(${obj})) { if (!${ks}.has(__pk__)) { ${obj}[__pk__] = ${v}[__pk__]; } }`,
+    );
   }
 
   emit(ctx, `  if (${iss}.length === ${pl2}) ${v} = ${obj};`);
@@ -412,10 +495,16 @@ function genArr(schema: LoydSchema<unknown>, ctx: Ctx): void {
   emit(ctx, "} else {");
 
   if (s._minLen !== undefined) {
-    emit(ctx, `  if (${v}.length < ${s._minLen}) { ${iss}.push({ code: "ERR_ARRAY_TOO_SHORT", path: ${pl}, meta: { min: ${s._minLen}, actual: ${v}.length } }); }`);
+    emit(
+      ctx,
+      `  if (${v}.length < ${s._minLen}) { ${iss}.push({ code: "ERR_ARRAY_TOO_SHORT", path: ${pl}, meta: { min: ${s._minLen}, actual: ${v}.length } }); }`,
+    );
   }
   if (s._maxLen !== undefined) {
-    emit(ctx, `  if (${v}.length > ${s._maxLen}) { ${iss}.push({ code: "ERR_ARRAY_TOO_LONG", path: ${pl}, meta: { max: ${s._maxLen}, actual: ${v}.length } }); }`);
+    emit(
+      ctx,
+      `  if (${v}.length > ${s._maxLen}) { ${iss}.push({ code: "ERR_ARRAY_TOO_LONG", path: ${pl}, meta: { max: ${s._maxLen}, actual: ${v}.length } }); }`,
+    );
   }
 
   if (elementSchema) {

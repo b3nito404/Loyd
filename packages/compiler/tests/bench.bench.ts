@@ -7,11 +7,8 @@ import * as v from "valibot";
 import { bench, describe } from "vitest";
 import { z } from "zod";
 
-// ─── AJV setup ───────────────────────────────────────────────────────────────
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
-
-// ─── Fixtures ─────────────────────────────────────────────────────────────────
 
 const VALID_EMAIL = "user@example.com";
 const _VALID_URL = "https://example.com";
@@ -129,7 +126,6 @@ const LoydDeep = object({
   score: number().min(0),
 });
 const LoydDeepCompiled = compile(LoydDeep);
-
 const ValibotDeep = v.object({
   id: v.pipe(v.string(), v.uuid()),
   profile: v.object({
@@ -251,7 +247,7 @@ const AjvLargeArray = ajv.compile({
   },
 });
 
-// ── 6. Union / discriminated union ────────────────────────────────────────────
+//Union / discriminated union 
 
 const LoydShape = union([
   object({ kind: literal("circle"), radius: number().min(0) }),
@@ -282,9 +278,9 @@ const ZodShape = z.discriminatedUnion("kind", [
 const circleData = { kind: "circle", radius: 5 };
 const rectData = { kind: "rect", width: 10, height: 20 };
 
-// ─── BENCHMARKS ───────────────────────────────────────────────────────────────
 
-// ── 1. String validation ──────────────────────────────────────────────────────
+
+// String validation 
 describe("string — minLength + maxLength (valid)", () => {
   bench("Loyd JIT", () => {
     LoydSimpleString.safeParse("hello world");
@@ -321,7 +317,7 @@ describe("string — minLength + maxLength (invalid)", () => {
   });
 });
 
-// ── 2. Number validation ──────────────────────────────────────────────────────
+//Number validation 
 describe("number — min + max + int (valid)", () => {
   bench("Loyd JIT", () => {
     LoydNumber.safeParse(42);
@@ -358,7 +354,7 @@ describe("number — min + max + int (invalid — float)", () => {
   });
 });
 
-// ── 3. Flat object — valid ────────────────────────────────────────────────────
+// Flat object - valid 
 describe("object flat — 3 fields (valid)", () => {
   bench("Loyd JIT", () => {
     LoydUser.safeParse(simpleUser);
@@ -395,7 +391,7 @@ describe("object flat — 3 fields (invalid — all wrong)", () => {
   });
 });
 
-// ── 4. Deep nested object ─────────────────────────────────────────────────────
+// Deep nested object
 describe("object deep nested — 5 levels (valid)", () => {
   bench("Loyd JIT", () => {
     LoydDeep.safeParse(deepObject);
@@ -432,7 +428,7 @@ describe("object deep nested — 5 levels (invalid — wrong type at root)", () 
   });
 });
 
-// ── 5. Large array — 1000 items ───────────────────────────────────────────────
+//Large array  1000 items 
 describe("array — 1000 valid items", () => {
   bench("Loyd JIT", () => {
     LoydLargeArray.safeParse(largeArray);
@@ -469,7 +465,7 @@ describe("array — 1000 items with ~30% invalid", () => {
   });
 });
 
-// ── 6. Union ──────────────────────────────────────────────────────────────────
+//Union
 describe("union — 3 variants discriminated (valid — first variant)", () => {
   bench("Loyd JIT", () => {
     LoydShape.safeParse(circleData);
@@ -500,7 +496,7 @@ describe("union — 3 variants discriminated (valid — last variant)", () => {
   });
 });
 
-// ── 7. Type check only — worst case overhead ──────────────────────────────────
+//Type check only  worst case overhead 
 describe("type check only — string (no rules)", () => {
   const LoydStr = string();
   const LoydStrCompiled = compile(LoydStr);
