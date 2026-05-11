@@ -4,6 +4,7 @@ export interface CompilerOptions {
   throwOnError?: boolean;
   optimize?: boolean;
   mode?: "development" | "production";
+  abortEarly?: boolean;
 }
 export interface CodegenOptions {
   fnName?: string;
