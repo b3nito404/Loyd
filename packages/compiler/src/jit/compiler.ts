@@ -10,7 +10,6 @@ export function compile<T>(
   schema: LoydSchema<T>,
   options: CompilerOptions = {},
 ): CompiledValidatorFn<T> {
-  // Cache check
   const cached = globalCache.get(schema);
   if (cached) return cached;
 
@@ -24,17 +23,7 @@ export function compile<T>(
     comments: options.mode === "development",
   });
 
-  //direct mutation
   schemaRefs.__schema_ref__ = target;
-
-  // Expose _discriminatorMap for optimized union (lookup O(1))
-  for (const [id, s] of Object.entries(schemaRefs)) {
-    // biome-ignore lint/suspicious/noExplicitAny: schema internals
-    const dm = (s as any)._discriminatorMap;
-    if (dm) {
-      schemaRefs[id] = s;
-    }
-  }
 
   const fn = new Function("__schemas__", `${code}\nreturn ${fnName};`)(
     schemaRefs,
