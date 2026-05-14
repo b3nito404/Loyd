@@ -10,6 +10,7 @@ JIT-compiled validators · Zero allocations on valid paths · Beats AJV on 13/15
 [![Bundle](https://img.shields.io/badge/bundle-0.8kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/schema)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue.svg)](https://www.typescriptlang.org)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/b3nito404/loyd/releases)
+[![npm downloads](https://img.shields.io/npm/dt/@loydjs/schema.svg)](https://www.npmjs.com/package/@loydjs/schema)
 
 </div>
 
@@ -20,7 +21,7 @@ JIT-compiled validators · Zero allocations on valid paths · Beats AJV on 13/15
 > Node.js 22 · ops/sec · higher is better  
 > **Loyd compiled** uses `compile(schema)` - JIT-compiled validator, cached per schema instance.
 
-![Benchmarks](./bench/bench.svg)
+![Benchmarks](./packages/compiler/bench/bench.svg)
 
 > Run locally: `pnpm --filter @loydjs/compiler exec vitest bench`
 
@@ -48,7 +49,7 @@ JIT-compiled validators · Zero allocations on valid paths · Beats AJV on 13/15
 
 Three techniques that no other TypeScript validation library combines:
 
-**Static inline path** - error paths are emitted as compile-time literals `["profile","address","city"]`. Zero heap allocation on the valid path — paths only exist when an error actually occurs.
+**Static inline path** - error paths are emitted as compile-time literals `["profile","address","city"]`. Zero heap allocation on the valid path , paths only exist when an error actually occurs.
 
 **Side-effect-aware codegen** - the compiler tracks which fields can mutate their value. Fields that can't (`number`, `boolean`, `literal`, pure `string`) skip the write-back entirely. No property writes on the valid path.
 
