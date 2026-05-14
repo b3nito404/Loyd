@@ -1,4 +1,3 @@
-import { compile } from "../src/index";
 import { array, boolean, number, object, string } from "@loydjs/schema";
 import { literal, union } from "@loydjs/schema";
 import Ajv from "ajv";
@@ -6,6 +5,7 @@ import addFormats from "ajv-formats";
 import * as v from "valibot";
 import { bench, describe } from "vitest";
 import { z } from "zod";
+import { compile } from "../src/index";
 
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
