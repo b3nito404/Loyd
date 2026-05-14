@@ -9,7 +9,6 @@ jobs:
   bench:
     name: Benchmark & update SVG
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
 
@@ -25,17 +24,18 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Build all packages
+        run: pnpm build
+
       - name: Run benchmarks
-        run: pnpm --filter @loydjs/compiler exec vitest bench --outputJson=bench/bench-results.json
+        run: pnpm --filter @loydjs/compiler exec vitest bench --reporter=verbose
 
       - name: Generate SVG
-        working-directory: packages/compiler
         run: npx tsx bench/generate-bench-svg.ts
+        working-directory: packages/compiler
 
       - name: Commit updated bench assets
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(bench): update benchmark results [skip ci]"
-          file_pattern: |
-            packages/compiler/bench/bench-results.json
-            packages/compiler/bench/bench.svg
+          file_pattern: "packages/compiler/bench/*"
