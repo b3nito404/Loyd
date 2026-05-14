@@ -1,4 +1,4 @@
-import { compile } from "@loydjs/compiler";
+import { compile } from "../src/index";
 import { array, boolean, number, object, string } from "@loydjs/schema";
 import { literal, union } from "@loydjs/schema";
 import Ajv from "ajv";
