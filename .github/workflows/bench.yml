@@ -27,7 +27,7 @@ jobs:
       - run: pnpm build --filter @loydjs/compiler
 
       - name: Run benchmarks
-        run: pnpm --filter @loydjs/compiler exec vitest bench --reporter=json --outputFile=bench/bench-results.json
+        run: pnpm --filter @loydjs/compiler exec vitest bench --outputJson=bench/bench-results.json
 
       - name: Generate SVG
         run: npx tsx bench/generate-bench-svg.ts
