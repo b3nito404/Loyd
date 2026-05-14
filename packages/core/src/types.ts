@@ -1,4 +1,3 @@
-// packages/core/src/types.ts
 export type LoydResult<T> =
   | { success: true; data: T; issues: [] }
   | { success: false; data: undefined; issues: [LoydIssue, ...LoydIssue[]] };

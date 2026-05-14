@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1572" height="568" viewBox="0 0 1572 568">
+<rect width="1572" height="568" fill="#f5f7fb"/>
+<rect x="46" y="82" width="1508" height="400" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+<text x="786" y="32" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="18" font-weight="700" fill="#0f172a">Loydjs | Performance Benchmarks</text>
+<text x="786" y="54" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#64748b">ops/sec · Node.js 22 · higher is better</text>
+<rect x="550" y="64" width="13" height="13" fill="#6366f1"/>
+<text x="569" y="74" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#475569">Loyd compiled</text>
+<rect x="668" y="64" width="13" height="13" fill="#f59e0b"/>
+<text x="687" y="74" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#475569">AJV</text>
+<rect x="786" y="64" width="13" height="13" fill="#10b981"/>
+<text x="805" y="74" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#475569">Valibot</text>
+<rect x="904" y="64" width="13" height="13" fill="#ef4444"/>
+<text x="923" y="74" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#475569">Zod</text>
+<line x1="56" y1="376" x2="1540" y2="376" stroke="#94a3b8" stroke-width="1.4"/>
+<line x1="56" y1="306" x2="1540" y2="306" stroke="#e2e8f0" stroke-width="0.8"/>
+<text x="50" y="310" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="9" fill="#94a3b8">25%</text>
+<line x1="56" y1="236" x2="1540" y2="236" stroke="#e2e8f0" stroke-width="0.8"/>
+<text x="50" y="240" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="9" fill="#94a3b8">50%</text>
+<line x1="56" y1="166" x2="1540" y2="166" stroke="#e2e8f0" stroke-width="0.8"/>
+<text x="50" y="170" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="9" fill="#94a3b8">75%</text>
+<line x1="56" y1="96" x2="1540" y2="96" stroke="#e2e8f0" stroke-width="0.8"/>
+<text x="50" y="100" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="9" fill="#94a3b8">100%</text>
+<rect x="60.0" y="96.0" width="33.0" height="280.0" fill="#6366f1" opacity="1"/>
+<rect x="56.9" y="98.0" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="76.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="700" fill="#6366f1">4.0M</text>
+<rect x="99.0" y="150.4" width="33.0" height="225.6" fill="#f59e0b" opacity="0.82"/>
+<rect x="95.9" y="130.4" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="115.5" y="142.4" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">3.2M</text>
+<rect x="138.0" y="231.4" width="33.0" height="144.6" fill="#10b981" opacity="0.82"/>
+<rect x="134.9" y="211.4" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="154.5" y="223.4" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">2.1M</text>
+<rect x="177.0" y="258.9" width="33.0" height="117.1" fill="#ef4444" opacity="0.82"/>
+<rect x="173.9" y="238.9" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="193.5" y="250.9" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">1.7M</text>
+<text x="135.0" y="406.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">string :</text>
+<text x="135.0" y="422.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">minLength +</text>
+<text x="135.0" y="438.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">maxLength</text>
+<line x1="230" y1="90" x2="230" y2="468" stroke="#eef2f7" stroke-width="1"/>
+<rect x="250.0" y="96.0" width="33.0" height="280.0" fill="#6366f1" opacity="1"/>
+<rect x="246.9" y="98.0" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="266.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="700" fill="#6366f1">7.2M</text>
+<rect x="289.0" y="117.7" width="33.0" height="258.3" fill="#f59e0b" opacity="0.82"/>
+<rect x="285.9" y="98.0" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="305.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">6.6M</text>
+<rect x="328.0" y="296.6" width="33.0" height="79.4" fill="#10b981" opacity="0.82"/>
+<rect x="324.9" y="276.6" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="344.5" y="288.6" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">2.0M</text>
+<rect x="367.0" y="270.5" width="33.0" height="105.5" fill="#ef4444" opacity="0.82"/>
+<rect x="363.9" y="250.5" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="383.5" y="262.5" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">2.7M</text>
+<text x="325.0" y="406.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">number : min +</text>
+<text x="325.0" y="422.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">max + int</text>
+<text x="325.0" y="438.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">(valid)</text>
+<line x1="420" y1="90" x2="420" y2="468" stroke="#eef2f7" stroke-width="1"/>
+<rect x="440.0" y="96.0" width="33.0" height="280.0" fill="#6366f1" opacity="1"/>
+<rect x="436.9" y="98.0" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="456.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="700" fill="#6366f1">2.9M</text>
+<rect x="479.0" y="172.2" width="33.0" height="203.8" fill="#f59e0b" opacity="0.82"/>
+<rect x="475.9" y="152.2" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="495.5" y="164.2" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">2.1M</text>
+<rect x="518.0" y="323.8" width="33.0" height="52.2" fill="#10b981" opacity="0.82"/>
+<rect x="514.9" y="303.8" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="534.5" y="315.8" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">536K</text>
+<rect x="557.0" y="327.9" width="33.0" height="48.1" fill="#ef4444" opacity="0.82"/>
+<rect x="553.9" y="307.9" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="573.5" y="319.9" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">494K</text>
+<text x="515.0" y="406.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">object flat :</text>
+<text x="515.0" y="422.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">3 fields</text>
+<text x="515.0" y="438.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">(valid)</text>
+<line x1="610" y1="90" x2="610" y2="468" stroke="#eef2f7" stroke-width="1"/>
+<rect x="630.0" y="96.0" width="33.0" height="280.0" fill="#6366f1" opacity="1"/>
+<rect x="626.9" y="98.0" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="646.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="700" fill="#6366f1">1.6M</text>
+<rect x="669.0" y="212.1" width="33.0" height="163.9" fill="#f59e0b" opacity="0.82"/>
+<rect x="665.9" y="192.1" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="685.5" y="204.1" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">921K</text>
+<rect x="708.0" y="353.1" width="33.0" height="22.9" fill="#10b981" opacity="0.82"/>
+<rect x="704.9" y="333.1" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="724.5" y="345.1" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">129K</text>
+<rect x="747.0" y="361.8" width="33.0" height="14.2" fill="#ef4444" opacity="0.82"/>
+<rect x="746.5" y="341.8" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="763.5" y="353.8" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">80K</text>
+<text x="705.0" y="406.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">object deep</text>
+<text x="705.0" y="422.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">nested : 5</text>
+<text x="705.0" y="438.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">levels (valid)</text>
+<line x1="800" y1="90" x2="800" y2="468" stroke="#eef2f7" stroke-width="1"/>
+<rect x="820.0" y="96.0" width="33.0" height="280.0" fill="#6366f1" opacity="1"/>
+<rect x="819.5" y="98.0" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="836.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="700" fill="#6366f1">6K</text>
+<rect x="859.0" y="179.8" width="33.0" height="196.2" fill="#f59e0b" opacity="0.82"/>
+<rect x="858.5" y="159.8" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="875.5" y="171.8" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">4K</text>
+<rect x="898.0" y="353.4" width="33.0" height="22.6" fill="#10b981" opacity="0.82"/>
+<rect x="897.5" y="333.4" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="914.5" y="345.4" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">508</text>
+<rect x="937.0" y="356.9" width="33.0" height="19.1" fill="#ef4444" opacity="0.82"/>
+<rect x="936.5" y="336.9" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="953.5" y="348.9" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">428</text>
+<text x="895.0" y="406.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">array : 1000</text>
+<text x="895.0" y="422.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">valid items</text>
+<line x1="990" y1="90" x2="990" y2="468" stroke="#eef2f7" stroke-width="1"/>
+<rect x="1010.0" y="96.0" width="33.0" height="280.0" fill="#6366f1" opacity="1"/>
+<rect x="1009.5" y="98.0" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1026.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="700" fill="#6366f1">6K</text>
+<rect x="1049.0" y="216.4" width="33.0" height="159.6" fill="#f59e0b" opacity="0.82"/>
+<rect x="1048.5" y="196.4" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1065.5" y="208.4" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">3K</text>
+<rect x="1088.0" y="357.5" width="33.0" height="18.5" fill="#10b981" opacity="0.82"/>
+<rect x="1087.5" y="337.5" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1104.5" y="349.5" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">392</text>
+<rect x="1127.0" y="370.0" width="33.0" height="6.0" fill="#ef4444" opacity="0.82"/>
+<rect x="1126.5" y="350.0" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1143.5" y="362.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">107</text>
+<text x="1085.0" y="406.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">array : 1000</text>
+<text x="1085.0" y="422.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">items with</text>
+<text x="1085.0" y="438.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">~30% invalid</text>
+<line x1="1180" y1="90" x2="1180" y2="468" stroke="#eef2f7" stroke-width="1"/>
+<rect x="1200.0" y="96.0" width="33.0" height="280.0" fill="#6366f1" opacity="1"/>
+<rect x="1196.9" y="98.0" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1216.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="700" fill="#6366f1">702K</text>
+<rect x="1278.0" y="274.9" width="33.0" height="101.1" fill="#10b981" opacity="0.82"/>
+<rect x="1274.9" y="254.9" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1294.5" y="266.9" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">254K</text>
+<rect x="1317.0" y="206.8" width="33.0" height="169.2" fill="#ef4444" opacity="0.82"/>
+<rect x="1313.9" y="186.8" width="39.2" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1333.5" y="198.8" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">424K</text>
+<text x="1275.0" y="406.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">union : 3</text>
+<text x="1275.0" y="422.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">variants</text>
+<text x="1275.0" y="438.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">discriminated</text>
+<line x1="1370" y1="90" x2="1370" y2="468" stroke="#eef2f7" stroke-width="1"/>
+<rect x="1390.0" y="96.0" width="33.0" height="280.0" fill="#6366f1" opacity="1"/>
+<rect x="1389.5" y="98.0" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1406.5" y="110.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="700" fill="#6366f1">1K</text>
+<rect x="1429.0" y="234.1" width="33.0" height="141.9" fill="#f59e0b" opacity="0.82"/>
+<rect x="1428.5" y="214.1" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1445.5" y="226.1" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">561</text>
+<rect x="1468.0" y="362.1" width="33.0" height="13.9" fill="#10b981" opacity="0.82"/>
+<rect x="1467.5" y="342.1" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1484.5" y="354.1" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">55</text>
+<rect x="1507.0" y="358.5" width="33.0" height="17.5" fill="#ef4444" opacity="0.82"/>
+<rect x="1506.5" y="338.5" width="34.0" height="14" fill="#ffffff" stroke="#dbe4ee" stroke-width="0.8"/>
+<text x="1523.5" y="350.5" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="8.5" font-weight="600" fill="#334155">69</text>
+<text x="1465.0" y="406.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">Stress deep</text>
+<text x="1465.0" y="422.0" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#475569">×1000</text>
+<text x="786" y="552" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="9" fill="#94a3b8">github.com/b3nito404/Loyd · pnpm --filter @loydjs/compiler exec vitest bench</text>
+</svg>

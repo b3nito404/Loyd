@@ -8,6 +8,7 @@ export default defineConfig({
     benchmark: {
       include: ["tests/**/*.bench.ts"],
       reporters: ["verbose"],
+      outputFile: "./bench/bench-results.json",
     },
     passWithNoTests: true,
   },

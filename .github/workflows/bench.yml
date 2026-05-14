@@ -1,0 +1,40 @@
+name: Bench
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  bench:
+    name: Benchmark & update SVG
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build --filter @loydjs/compiler
+
+      - name: Run benchmarks
+        run: pnpm --filter @loydjs/compiler exec vitest bench --reporter=json --outputFile=bench/bench-results.json
+
+      - name: Generate SVG
+        run: npx tsx bench/generate-bench-svg.ts
+        working-directory: packages/compiler
+
+      - name: Commit updated bench assets
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(bench): update benchmark results [skip ci]"
+          file_pattern: "packages/compiler/bench/*"

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "string : minLength + maxLength (valid)",
+    "tasks": [
+      { "name": "Loyd compiled", "hz": 3997311 },
+      { "name": "AJV", "hz": 3220043 },
+      { "name": "Valibot", "hz": 2064070 },
+      { "name": "Zod", "hz": 1671041 }
+    ]
+  },
+  {
+    "name": "number : min + max + int (valid)",
+    "tasks": [
+      { "name": "Loyd compiled", "hz": 7167985 },
+      { "name": "AJV", "hz": 6612883 },
+      { "name": "Valibot", "hz": 2031468 },
+      { "name": "Zod", "hz": 2701268 }
+    ]
+  },
+  {
+    "name": "object flat : 3 fields (valid)",
+    "tasks": [
+      { "name": "Loyd compiled", "hz": 2878822 },
+      { "name": "AJV", "hz": 2095528 },
+      { "name": "Valibot", "hz": 536357 },
+      { "name": "Zod", "hz": 494095 }
+    ]
+  },
+  {
+    "name": "object deep nested : 5 levels (valid)",
+    "tasks": [
+      { "name": "Loyd compiled", "hz": 1573971 },
+      { "name": "AJV", "hz": 921434 },
+      { "name": "Valibot", "hz": 128929 },
+      { "name": "Zod", "hz": 79592 }
+    ]
+  },
+  {
+    "name": "array : 1000 valid items",
+    "tasks": [
+      { "name": "Loyd compiled", "hz": 6285 },
+      { "name": "AJV", "hz": 4405 },
+      { "name": "Valibot", "hz": 508 },
+      { "name": "Zod", "hz": 428 }
+    ]
+  },
+  {
+    "name": "array : 1000 items with ~30% invalid",
+    "tasks": [
+      { "name": "Loyd compiled", "hz": 5933 },
+      { "name": "AJV", "hz": 3382 },
+      { "name": "Valibot", "hz": 392 },
+      { "name": "Zod", "hz": 107 }
+    ]
+  },
+  {
+    "name": "union : 3 variants discriminated (valid — last variant)",
+    "tasks": [
+      { "name": "Loyd compiled", "hz": 702228 },
+      { "name": "Loyd JIT", "hz": 409627 },
+      { "name": "Valibot", "hz": 253587 },
+      { "name": "Zod", "hz": 424289 }
+    ]
+  },
+  {
+    "name": "stress  deep nested repeated 1k times",
+    "tasks": [
+      { "name": "Loyd compiled", "hz": 1107 },
+      { "name": "AJV", "hz": 561 },
+      { "name": "Valibot", "hz": 55 },
+      { "name": "Zod", "hz": 69 }
+    ]
+  }
+]
