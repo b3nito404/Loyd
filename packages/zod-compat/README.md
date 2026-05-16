@@ -1,171 +1,161 @@
 <div align="center">
 
-<h1>Loyd</h1>
+<h1>@loydjs/zod-compat</h1>
 
-
-**High-performance, tree-shakable schema validation for TypeScript.**
+<p><strong>Migrate from Zod to Loyd in minutes.</strong><br/>
+fromZod · toZod · Automated codemod · Full schema coverage.</p>
 
 [![CI](https://github.com/b3nito404/loyd/actions/workflows/ci.yml/badge.svg)](https://github.com/b3nito404/loyd/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Bundle](https://img.shields.io/badge/bundle-0.8kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/schema)
+[![Bundle](https://img.shields.io/badge/bundle-~5kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/zod-compat)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue.svg)](https://www.typescriptlang.org)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/b3nito404/loyd/releases)
+[![npm downloads](https://img.shields.io/npm/dm/@loydjs/zod-compat?color=6366f1&label=downloads)](https://www.npmjs.com/package/@loydjs/zod-compat)
 
 </div>
 
 ---
 
-## Key features
+## Overview
 
-- **0.8 kb minimal bundle** : functional `pipe()` composition enables full tree-shaking; import only what you use
-- **JIT compiler** : `compile(schema)` generates a pure JavaScript function via `new Function()`; subsequent calls are **2× faster** than `safeParse` on hot paths
-- **Structured i18n** : validators emit `{ code, path, meta }`, never locale strings; swap locales at runtime without touching your schemas
-- **Two-pass async pipeline** : sync rules execute first; async rules only if sync passes; multiple async rules run in parallel via `Promise.all`
-- **Field dependency graph** : `buildDag(schema, deps)` enables incremental revalidation; change one field -> revalidate only it and its dependents
-- **Native React integration** : `useForm`, `useField`, `useFieldArray` with zero external dependencies, backed by the DAG
+`@loydjs/zod-compat` provides bidirectional conversion between Zod and Loyd schemas, plus an automated codemod that migrates your entire codebase in one command. If you have an existing Zod project and want Loyd's performance, this is your migration path.
 
 ---
 
 ## Installation
 
 ```sh
-# Core  start here
-npm install @loydjs/schema @loydjs/core @loydjs/types
-
-# Optional packages
-npm install @loydjs/async          # two-pass async pipeline
-npm install @loydjs/compiler       # JIT compilation
-npm install @loydjs/error-engine   # structured i18n
-npm install @loydjs/react          # React hooks (requires @loydjs/graph)
-npm install @loydjs/graph          # field dependency DAG
-npm install @loydjs/zod-compat     # Zod migration utilities
-npm install @loydjs/openapi        # OpenAPI 3.1 / JSON Schema export
-npm install @loydjs/vite           # Vite / Rollup AOT plugin
+npm install @loydjs/zod-compat
 ```
-> **Requires** Node.js ≥ 20, TypeScript ≥ 5.4, and `"strict": true` in your `tsconfig.json`.
+
+> **Requires** `@loydjs/core` · `@loydjs/schema` · `zod` · Node.js ≥ 20 · TypeScript ≥ 5.4
 
 ---
 
-## Quick start
+## API
+
+### `fromZod(zodSchema)`
+
+Converts a Zod schema to a Loyd schema. Supports all common Zod types.
 
 ```ts
-import { object, pipe, string, number, email, minLength } from "@loydjs/schema";
-import { parse, safeParse } from "@loydjs/core";
-import type { Infer } from "@loydjs/types";
+import { fromZod } from "@loydjs/zod-compat";
+import { z } from "zod";
 
-// 1. Define your schema
-const UserSchema = object({
-  name:  pipe(string(), minLength(2)),
-  email: pipe(string(), email()),
-  age:   number().int().min(0),
+const ZodUser = z.object({
+  name:  z.string().min(2).max(100),
+  email: z.string().email(),
+  age:   z.number().int().min(0).max(120),
+  role:  z.enum(["admin", "user", "guest"]),
+  tags:  z.array(z.string()),
+  address: z.object({
+    street: z.string(),
+    city:   z.string(),
+  }).optional(),
 });
 
-// 2. Infer the TypeScript type - zero runtime cost
-type User = Infer<typeof UserSchema>;
-// -> { name: string; email: string; age: number }
+const LoydUser = fromZod(ZodUser);
 
-// 3a. parse()  throws LoydError on failure
-const user = parse(UserSchema, req.body);
-
-// 3b. safeParse()  never throws
-const result = safeParse(UserSchema, formData);
-if (result.success) {
-  console.log(result.data.name); // typed as User 
-} else {
-  result.issues.forEach(issue => {
-    console.log(issue.code);  // "ERR_STRING_TOO_SHORT"
-    console.log(issue.path);  // ["name"]
-    console.log(issue.meta);  // { min: 2, actual: 1 }
-  });
-}
+// Use as a normal Loyd schema
+const result = safeParse(LoydUser, req.body);
 ```
 
-### React forms
+### `toZod(loydSchema)`
 
-```tsx
-import { useForm } from "@loydjs/react";
-
-function LoginForm() {
-  const { register, handleSubmit, state } = useForm({
-    schema: LoginSchema,
-    defaultValues: { email: "", password: "" },
-    mode: "onChange",
-  });
-
-  return (
-    <form onSubmit={handleSubmit(onValid, onInvalid)}>
-      <input {...register("email")} type="email" />
-      <input {...register("password")} type="password" />
-      <button type="submit" disabled={state.isSubmitting}>Sign in</button>
-    </form>
-  );
-}
-```
-
-### JIT compilation
+Converts a Loyd schema back to a Zod schema. Useful when you need to use a Zod-specific API (e.g. tRPC, OpenAPI generators that only support Zod).
 
 ```ts
-import { compile } from "@loydjs/compiler";
+import { toZod } from "@loydjs/zod-compat";
 
-const validate = compile(UserSchema);
+const ZodUser = toZod(LoydUser);
 
-// 2× faster on hot paths - compiled once, cached per schema instance
-const result = validate(input); // LoydResult<User>
+// Use with tRPC, Zod-specific libraries, etc.
+const router = t.router({
+  createUser: t.procedure
+    .input(ZodUser)
+    .mutation(({ input }) => db.users.create(input)),
+});
 ```
 
-### i18n error formatting
+### `runCodemod(path, options)`
+
+Automated migration — scans your codebase and rewrites Zod imports and schema definitions to Loyd equivalents.
 
 ```ts
-import { configureFormatter, fr } from "@loydjs/error-engine";
+import { runCodemod } from "@loydjs/zod-compat";
 
-// Call once at app startup
-configureFormatter("fr", fr);
+await runCodemod("./src", {
+  write:   true,    // write changes to disk (default: false = dry run)
+  verbose: true,    // log each transformed file
+});
 
-// Issues are now formatted in French
-const result = safeParse(UserSchema, badInput);
-// result.issues[0].message -> "Minimum 2 caractères (reçu : 1)"
+// Output:
+//  src/schemas/user.ts       (3 schemas migrated)
+//  src/schemas/post.ts       (1 schema migrated)
+//  src/api/validation.ts     (5 schemas migrated)
+//  Migrated 47 files, 312 schemas
 ```
 
-### Migrate from Zod
+Or use the CLI directly:
 
-```ts
-import { fromZod, runCodemod } from "@loydjs/zod-compat";
-
-// Convert a single schema
-const LoydUser = fromZod(zodUserSchema);
-
-// Or run the automated codemod across your entire codebase
-await runCodemod("./src", { write: true, verbose: true });
+```sh
+npx loyd-codemod ./src --write
+npx loyd-codemod ./src --write --verbose
+npx loyd-codemod ./src --dry-run   # preview without writing
 ```
 
 ---
 
-## Packages
+## Schema conversion table
 
-| Package | Description | Size |
-|---|---|---|
-| `@loydjs/core` | `parse`, `safeParse`, `LoydError`, `BaseSchema` | 3.9 kb |
-| `@loydjs/schema` | All primitives, composites, modifiers, refinements | tree-shakeable |
-| `@loydjs/types` | `Infer<>`, `InferInput<>`, `InferOutput<>` | 0 kb runtime |
-| `@loydjs/async` | `parseAsync`, two-pass pipeline, `AbortSignal` | ~2 kb |
-| `@loydjs/compiler` | `compile()`, JIT codegen, cache management | ~4 kb |
-| `@loydjs/error-engine` | `createFormatter`, en/fr/es/ar locales | ~3 kb |
-| `@loydjs/graph` | `buildDag`, `validateIncremental`, dirty tracking | ~3 kb |
-| `@loydjs/react` | `useForm`, `useField`, `useFieldArray`, `FormProvider` | ~8 kb |
-| `@loydjs/zod-compat` | `fromZod`, `toZod`, `runCodemod` | ~5 kb |
-| `@loydjs/openapi` | `toOpenApi`, `toJsonSchema`, `toOpenApiComponents` | ~4 kb |
-| `@loydjs/vite` | `loydPlugin()` - Vite/Rollup AOT compilation | ~2 kb |
+| Zod | Loyd |
+|:---|:---|
+| `z.string()` | `string()` |
+| `z.string().min(n)` | `string().minLength(n)` |
+| `z.string().max(n)` | `string().maxLength(n)` |
+| `z.string().email()` | `string().email()` |
+| `z.string().uuid()` | `string().uuid()` |
+| `z.string().url()` | `string().url()` |
+| `z.number()` | `number()` |
+| `z.number().min(n)` | `number().min(n)` |
+| `z.number().max(n)` | `number().max(n)` |
+| `z.number().int()` | `number().int()` |
+| `z.boolean()` | `boolean()` |
+| `z.literal(v)` | `literal(v)` |
+| `z.object({})` | `object({})` |
+| `z.array(s)` | `array(s)` |
+| `z.union([...])` | `union([...])` |
+| `z.discriminatedUnion(k, [...])` | `discriminatedUnion(k, [...])` |
+| `z.optional(s)` | `optional(s)` |
+| `z.nullable(s)` | `nullable(s)` |
+| `z.enum([...])` | `union([literal("a"), literal("b"), ...])` |
+| `z.tuple([...])` | `tuple([...])` |
+| `z.record(s)` | `record(s)` |
+| `z.map(k, v)` | `map(k, v)` |
+| `z.set(s)` | `set(s)` |
+
+---
+
+## Dependencies
+
+| Package | Role |
+|:---|:---|
+| `@loydjs/core` | `LoydSchema` base types |
+| `@loydjs/schema` | Target schema constructors |
+
+## Peer dependencies
+
+| Package | Version |
+|:---|:---|
+| `zod` | ≥ 3.0.0 |
 
 ---
 
 ## Documentation
 
-For the full API reference, guides, and examples, visit the official documentation:
-
-**[https://loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
+**[loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
 
 ---
 
 ## License
 
-MIT 
+MIT © [b3nito404](https://github.com/b3nito404)

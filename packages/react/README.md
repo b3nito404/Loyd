@@ -1,171 +1,222 @@
 <div align="center">
 
-<h1>Loyd</h1>
+<h1>@loydjs/react</h1>
 
-
-**High-performance, tree-shakable schema validation for TypeScript.**
+<p><strong>React form hooks for Loyd schemas.</strong><br/>
+useForm · useField · useFieldArray · Zero external dependencies.</p>
 
 [![CI](https://github.com/b3nito404/loyd/actions/workflows/ci.yml/badge.svg)](https://github.com/b3nito404/loyd/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Bundle](https://img.shields.io/badge/bundle-0.8kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/schema)
+[![Bundle](https://img.shields.io/badge/bundle-~8kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/react)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue.svg)](https://www.typescriptlang.org)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/b3nito404/loyd/releases)
+[![npm downloads](https://img.shields.io/npm/dm/@loydjs/react?color=6366f1&label=downloads)](https://www.npmjs.com/package/@loydjs/react)
 
 </div>
 
 ---
 
-## Key features
+## Overview
 
-- **0.8 kb minimal bundle** : functional `pipe()` composition enables full tree-shaking; import only what you use
-- **JIT compiler** : `compile(schema)` generates a pure JavaScript function via `new Function()`; subsequent calls are **2× faster** than `safeParse` on hot paths
-- **Structured i18n** : validators emit `{ code, path, meta }`, never locale strings; swap locales at runtime without touching your schemas
-- **Two-pass async pipeline** : sync rules execute first; async rules only if sync passes; multiple async rules run in parallel via `Promise.all`
-- **Field dependency graph** : `buildDag(schema, deps)` enables incremental revalidation; change one field -> revalidate only it and its dependents
-- **Native React integration** : `useForm`, `useField`, `useFieldArray` with zero external dependencies, backed by the DAG
+`@loydjs/react` brings Loyd's schema validation into React with a minimal, type-safe form API. It uses the field dependency DAG from `@loydjs/graph` to revalidate only the fields that need it, making it efficient for large, complex forms.
+
+No external form libraries required. No `react-hook-form`, no `formik`. Just Loyd schemas and React hooks.
 
 ---
 
 ## Installation
 
 ```sh
-# Core  start here
-npm install @loydjs/schema @loydjs/core @loydjs/types
-
-# Optional packages
-npm install @loydjs/async          # two-pass async pipeline
-npm install @loydjs/compiler       # JIT compilation
-npm install @loydjs/error-engine   # structured i18n
-npm install @loydjs/react          # React hooks (requires @loydjs/graph)
-npm install @loydjs/graph          # field dependency DAG
-npm install @loydjs/zod-compat     # Zod migration utilities
-npm install @loydjs/openapi        # OpenAPI 3.1 / JSON Schema export
-npm install @loydjs/vite           # Vite / Rollup AOT plugin
+npm install @loydjs/react @loydjs/graph
 ```
-> **Requires** Node.js ≥ 20, TypeScript ≥ 5.4, and `"strict": true` in your `tsconfig.json`.
+
+> **Requires** `@loydjs/core` · `@loydjs/schema` · `@loydjs/graph` · React ≥ 18 · TypeScript ≥ 5.4
 
 ---
 
-## Quick start
+## API
 
-```ts
-import { object, pipe, string, number, email, minLength } from "@loydjs/schema";
-import { parse, safeParse } from "@loydjs/core";
-import type { Infer } from "@loydjs/types";
+### `useForm(options)`
 
-// 1. Define your schema
-const UserSchema = object({
-  name:  pipe(string(), minLength(2)),
-  email: pipe(string(), email()),
-  age:   number().int().min(0),
-});
-
-// 2. Infer the TypeScript type - zero runtime cost
-type User = Infer<typeof UserSchema>;
-// -> { name: string; email: string; age: number }
-
-// 3a. parse()  throws LoydError on failure
-const user = parse(UserSchema, req.body);
-
-// 3b. safeParse()  never throws
-const result = safeParse(UserSchema, formData);
-if (result.success) {
-  console.log(result.data.name); // typed as User 
-} else {
-  result.issues.forEach(issue => {
-    console.log(issue.code);  // "ERR_STRING_TOO_SHORT"
-    console.log(issue.path);  // ["name"]
-    console.log(issue.meta);  // { min: 2, actual: 1 }
-  });
-}
-```
-
-### React forms
+The main hook. Returns `register`, `handleSubmit`, `state`, `errors`, and `setValue`.
 
 ```tsx
 import { useForm } from "@loydjs/react";
+import { object, string, number } from "@loydjs/schema";
+import type { Infer } from "@loydjs/types";
 
-function LoginForm() {
-  const { register, handleSubmit, state } = useForm({
-    schema: LoginSchema,
-    defaultValues: { email: "", password: "" },
-    mode: "onChange",
+const SignupSchema = object({
+  name:     string().minLength(2).maxLength(100),
+  email:    string().email(),
+  age:      number().int().min(18).max(120),
+  password: string().minLength(8),
+});
+
+type Signup = Infer<typeof SignupSchema>;
+
+function SignupForm() {
+  const { register, handleSubmit, state, errors } = useForm<Signup>({
+    schema: SignupSchema,
+    defaultValues: { name: "", email: "", age: 18, password: "" },
+    mode: "onChange", // "onBlur" | "onSubmit" | "onChange"
   });
+
+  const onValid = (data: Signup) => console.log("Submitted:", data);
+  const onInvalid = (issues) => console.log("Errors:", issues);
 
   return (
     <form onSubmit={handleSubmit(onValid, onInvalid)}>
-      <input {...register("email")} type="email" />
-      <input {...register("password")} type="password" />
-      <button type="submit" disabled={state.isSubmitting}>Sign in</button>
+      <div>
+        <input {...register("name")} placeholder="Name" />
+        {errors.name && <p>{errors.name.message}</p>}
+      </div>
+
+      <div>
+        <input {...register("email")} type="email" placeholder="Email" />
+        {errors.email && <p>{errors.email.message}</p>}
+      </div>
+
+      <div>
+        <input {...register("age")} type="number" />
+        {errors.age && <p>{errors.age.message}</p>}
+      </div>
+
+      <div>
+        <input {...register("password")} type="password" placeholder="Password" />
+        {errors.password && <p>{errors.password.message}</p>}
+      </div>
+
+      <button type="submit" disabled={state.isSubmitting}>
+        {state.isSubmitting ? "Signing up..." : "Sign up"}
+      </button>
     </form>
   );
 }
 ```
 
-### JIT compilation
+### `useField(name, form)`
 
-```ts
-import { compile } from "@loydjs/compiler";
+Subscribes to a single field — re-renders only when that field changes.
 
-const validate = compile(UserSchema);
+```tsx
+import { useField } from "@loydjs/react";
 
-// 2× faster on hot paths - compiled once, cached per schema instance
-const result = validate(input); // LoydResult<User>
+function EmailField({ form }) {
+  const { value, error, onChange, onBlur } = useField("email", form);
+
+  return (
+    <div>
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onBlur={onBlur}
+        type="email"
+      />
+      {error && <span style={{ color: "red" }}>{error.message}</span>}
+    </div>
+  );
+}
 ```
 
-### i18n error formatting
+### `useFieldArray(name, form)`
 
-```ts
-import { configureFormatter, fr } from "@loydjs/error-engine";
+Manages arrays of fields with `append`, `remove`, `move`, and `swap`.
 
-// Call once at app startup
-configureFormatter("fr", fr);
+```tsx
+import { useFieldArray } from "@loydjs/react";
 
-// Issues are now formatted in French
-const result = safeParse(UserSchema, badInput);
-// result.issues[0].message -> "Minimum 2 caractères (reçu : 1)"
+const OrderSchema = object({
+  items: array(object({
+    productId: number().int().min(1),
+    quantity:  number().int().min(1),
+  })),
+});
+
+function OrderForm() {
+  const form = useForm({ schema: OrderSchema, defaultValues: { items: [] } });
+  const { fields, append, remove } = useFieldArray("items", form);
+
+  return (
+    <form onSubmit={form.handleSubmit(onValid)}>
+      {fields.map((field, index) => (
+        <div key={field.id}>
+          <input {...form.register(`items.${index}.productId`)} type="number" />
+          <input {...form.register(`items.${index}.quantity`)}  type="number" />
+          <button type="button" onClick={() => remove(index)}>Remove</button>
+        </div>
+      ))}
+      <button type="button" onClick={() => append({ productId: 0, quantity: 1 })}>
+        Add item
+      </button>
+      <button type="submit">Place order</button>
+    </form>
+  );
+}
 ```
 
-### Migrate from Zod
+### `FormProvider` + `useFormContext`
 
-```ts
-import { fromZod, runCodemod } from "@loydjs/zod-compat";
+Share a form instance across a component tree without prop drilling.
 
-// Convert a single schema
-const LoydUser = fromZod(zodUserSchema);
+```tsx
+import { FormProvider, useFormContext } from "@loydjs/react";
 
-// Or run the automated codemod across your entire codebase
-await runCodemod("./src", { write: true, verbose: true });
+function App() {
+  const form = useForm({ schema: SignupSchema, defaultValues: { ... } });
+
+  return (
+    <FormProvider form={form}>
+      <PersonalInfoSection />
+      <AccountSection />
+      <SubmitButton />
+    </FormProvider>
+  );
+}
+
+function SubmitButton() {
+  const { state } = useFormContext();
+  return <button disabled={state.isSubmitting}>Submit</button>;
+}
 ```
 
 ---
 
-## Packages
+## Form state
 
-| Package | Description | Size |
-|---|---|---|
-| `@loydjs/core` | `parse`, `safeParse`, `LoydError`, `BaseSchema` | 3.9 kb |
-| `@loydjs/schema` | All primitives, composites, modifiers, refinements | tree-shakeable |
-| `@loydjs/types` | `Infer<>`, `InferInput<>`, `InferOutput<>` | 0 kb runtime |
-| `@loydjs/async` | `parseAsync`, two-pass pipeline, `AbortSignal` | ~2 kb |
-| `@loydjs/compiler` | `compile()`, JIT codegen, cache management | ~4 kb |
-| `@loydjs/error-engine` | `createFormatter`, en/fr/es/ar locales | ~3 kb |
-| `@loydjs/graph` | `buildDag`, `validateIncremental`, dirty tracking | ~3 kb |
-| `@loydjs/react` | `useForm`, `useField`, `useFieldArray`, `FormProvider` | ~8 kb |
-| `@loydjs/zod-compat` | `fromZod`, `toZod`, `runCodemod` | ~5 kb |
-| `@loydjs/openapi` | `toOpenApi`, `toJsonSchema`, `toOpenApiComponents` | ~4 kb |
-| `@loydjs/vite` | `loydPlugin()` - Vite/Rollup AOT compilation | ~2 kb |
+```ts
+interface FormState {
+  isSubmitting:  boolean;
+  isValid:       boolean;
+  isDirty:       boolean;
+  submitCount:   number;
+  touchedFields: Record<string, boolean>;
+  dirtyFields:   Record<string, boolean>;
+}
+```
+
+---
+
+## Dependencies
+
+| Package | Role |
+|:---|:---|
+| `@loydjs/core` | `LoydSchema`, `LoydIssue` types |
+| `@loydjs/schema` | Schema definitions |
+| `@loydjs/graph` | Field dependency DAG for incremental revalidation |
+
+## Peer dependencies
+
+| Package | Version |
+|:---|:---|
+| `react` | ≥ 18.0.0 |
 
 ---
 
 ## Documentation
 
-For the full API reference, guides, and examples, visit the official documentation:
-
-**[https://loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
+**[loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
 
 ---
 
 ## License
 
-MIT 
+MIT © [b3nito404](https://github.com/b3nito404)

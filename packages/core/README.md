@@ -1,171 +1,171 @@
 <div align="center">
 
-<h1>Loyd</h1>
+<h1>@loydjs/core</h1>
 
-
-**High-performance, tree-shakable schema validation for TypeScript.**
+<p><strong>The runtime foundation of Loyd.</strong><br/>
+Base schema class · parse · safeParse · LoydError · typed results.</p>
 
 [![CI](https://github.com/b3nito404/loyd/actions/workflows/ci.yml/badge.svg)](https://github.com/b3nito404/loyd/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Bundle](https://img.shields.io/badge/bundle-0.8kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/schema)
+[![Bundle](https://img.shields.io/badge/bundle-3.9kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/core)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue.svg)](https://www.typescriptlang.org)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/b3nito404/loyd/releases)
 
 </div>
 
 ---
 
-## Key features
+## Overview
 
-- **0.8 kb minimal bundle** : functional `pipe()` composition enables full tree-shaking; import only what you use
-- **JIT compiler** : `compile(schema)` generates a pure JavaScript function via `new Function()`; subsequent calls are **2× faster** than `safeParse` on hot paths
-- **Structured i18n** : validators emit `{ code, path, meta }`, never locale strings; swap locales at runtime without touching your schemas
-- **Two-pass async pipeline** : sync rules execute first; async rules only if sync passes; multiple async rules run in parallel via `Promise.all`
-- **Field dependency graph** : `buildDag(schema, deps)` enables incremental revalidation; change one field -> revalidate only it and its dependents
-- **Native React integration** : `useForm`, `useField`, `useFieldArray` with zero external dependencies, backed by the DAG
+`@loydjs/core` is the runtime foundation that every other Loyd package builds on. It provides the base schema class, the `parse` / `safeParse` functions, the structured error type, and all shared TypeScript interfaces.
+
+You rarely import from `@loydjs/core` directly in application code — use `@loydjs/schema` for schema building and `@loydjs/types` for type inference. Core is the layer you depend on when building custom schemas or extending Loyd.
 
 ---
 
 ## Installation
 
 ```sh
-# Core  start here
-npm install @loydjs/schema @loydjs/core @loydjs/types
-
-# Optional packages
-npm install @loydjs/async          # two-pass async pipeline
-npm install @loydjs/compiler       # JIT compilation
-npm install @loydjs/error-engine   # structured i18n
-npm install @loydjs/react          # React hooks (requires @loydjs/graph)
-npm install @loydjs/graph          # field dependency DAG
-npm install @loydjs/zod-compat     # Zod migration utilities
-npm install @loydjs/openapi        # OpenAPI 3.1 / JSON Schema export
-npm install @loydjs/vite           # Vite / Rollup AOT plugin
+npm install @loydjs/core
 ```
-> **Requires** Node.js ≥ 20, TypeScript ≥ 5.4, and `"strict": true` in your `tsconfig.json`.
+
+> **Requires** Node.js ≥ 20 · TypeScript ≥ 5.4 · `"strict": true` in `tsconfig.json`
 
 ---
 
-## Quick start
+## API
+
+### `safeParse(schema, input)`
+
+Never throws. Returns a discriminated union — check `result.success` before accessing `result.data`.
 
 ```ts
-import { object, pipe, string, number, email, minLength } from "@loydjs/schema";
-import { parse, safeParse } from "@loydjs/core";
-import type { Infer } from "@loydjs/types";
+import { safeParse } from "@loydjs/core";
+import { UserSchema } from "./schemas";
 
-// 1. Define your schema
-const UserSchema = object({
-  name:  pipe(string(), minLength(2)),
-  email: pipe(string(), email()),
-  age:   number().int().min(0),
-});
+const result = safeParse(UserSchema, req.body);
 
-// 2. Infer the TypeScript type - zero runtime cost
-type User = Infer<typeof UserSchema>;
-// -> { name: string; email: string; age: number }
-
-// 3a. parse()  throws LoydError on failure
-const user = parse(UserSchema, req.body);
-
-// 3b. safeParse()  never throws
-const result = safeParse(UserSchema, formData);
 if (result.success) {
-  console.log(result.data.name); // typed as User 
+  console.log(result.data); // typed as User
 } else {
-  result.issues.forEach(issue => {
-    console.log(issue.code);  // "ERR_STRING_TOO_SHORT"
-    console.log(issue.path);  // ["name"]
-    console.log(issue.meta);  // { min: 2, actual: 1 }
-  });
+  for (const issue of result.issues) {
+    console.log(issue.code);    // "ERR_STRING_INVALID_EMAIL"
+    console.log(issue.path);    // ["email"]
+    console.log(issue.meta);    // { expected: "email" }
+    console.log(issue.message); // optional - set by error-engine
+  }
 }
 ```
 
-### React forms
+### `parse(schema, input)`
 
-```tsx
-import { useForm } from "@loydjs/react";
+Throws `LoydError` on failure. Use when you want to let the error propagate (e.g. inside a try/catch at the API boundary).
 
-function LoginForm() {
-  const { register, handleSubmit, state } = useForm({
-    schema: LoginSchema,
-    defaultValues: { email: "", password: "" },
-    mode: "onChange",
-  });
+```ts
+import { parse } from "@loydjs/core";
 
-  return (
-    <form onSubmit={handleSubmit(onValid, onInvalid)}>
-      <input {...register("email")} type="email" />
-      <input {...register("password")} type="password" />
-      <button type="submit" disabled={state.isSubmitting}>Sign in</button>
-    </form>
-  );
+try {
+  const user = parse(UserSchema, req.body);
+  // user is typed as User
+} catch (err) {
+  if (err instanceof LoydError) {
+    console.log(err.issues); // LoydIssue[]
+  }
 }
 ```
 
-### JIT compilation
+### `LoydError`
+
+Extends `Error`. Carries the full `issues` array.
 
 ```ts
-import { compile } from "@loydjs/compiler";
+import { LoydError } from "@loydjs/core";
 
-const validate = compile(UserSchema);
-
-// 2× faster on hot paths - compiled once, cached per schema instance
-const result = validate(input); // LoydResult<User>
+const err = new LoydError(issues);
+err.issues; // [LoydIssue, ...LoydIssue[]]
+err.message; // first issue code as string
 ```
 
-### i18n error formatting
+### `BaseSchema`
+
+The abstract base class for all Loyd schemas. Extend it to build custom schema types.
 
 ```ts
-import { configureFormatter, fr } from "@loydjs/error-engine";
+import { BaseSchema } from "@loydjs/core";
+import type { LoydResult } from "@loydjs/core";
 
-// Call once at app startup
-configureFormatter("fr", fr);
+class IpSchema extends BaseSchema<string> {
+  readonly _type = "ip" as const;
 
-// Issues are now formatted in French
-const result = safeParse(UserSchema, badInput);
-// result.issues[0].message -> "Minimum 2 caractères (reçu : 1)"
-```
+  _validate(input: unknown): LoydResult<string> {
+    if (typeof input !== "string")
+      return this._fail("ERR_STRING_INVALID_TYPE", [], { received: typeof input });
 
-### Migrate from Zod
+    if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(input))
+      return this._fail("ERR_IP_INVALID", [], { actual: input });
 
-```ts
-import { fromZod, runCodemod } from "@loydjs/zod-compat";
+    return this._ok(input);
+  }
+}
 
-// Convert a single schema
-const LoydUser = fromZod(zodUserSchema);
-
-// Or run the automated codemod across your entire codebase
-await runCodemod("./src", { write: true, verbose: true });
+export const ip = () => new IpSchema();
 ```
 
 ---
 
-## Packages
+## Types
 
-| Package | Description | Size |
-|---|---|---|
-| `@loydjs/core` | `parse`, `safeParse`, `LoydError`, `BaseSchema` | 3.9 kb |
-| `@loydjs/schema` | All primitives, composites, modifiers, refinements | tree-shakeable |
-| `@loydjs/types` | `Infer<>`, `InferInput<>`, `InferOutput<>` | 0 kb runtime |
-| `@loydjs/async` | `parseAsync`, two-pass pipeline, `AbortSignal` | ~2 kb |
-| `@loydjs/compiler` | `compile()`, JIT codegen, cache management | ~4 kb |
-| `@loydjs/error-engine` | `createFormatter`, en/fr/es/ar locales | ~3 kb |
-| `@loydjs/graph` | `buildDag`, `validateIncremental`, dirty tracking | ~3 kb |
-| `@loydjs/react` | `useForm`, `useField`, `useFieldArray`, `FormProvider` | ~8 kb |
-| `@loydjs/zod-compat` | `fromZod`, `toZod`, `runCodemod` | ~5 kb |
-| `@loydjs/openapi` | `toOpenApi`, `toJsonSchema`, `toOpenApiComponents` | ~4 kb |
-| `@loydjs/vite` | `loydPlugin()` - Vite/Rollup AOT compilation | ~2 kb |
+```ts
+// Result type - discriminated union
+type LoydResult<T> =
+  | { success: true;  data: T;         issues: [] }
+  | { success: false; data: undefined; issues: [LoydIssue, ...LoydIssue[]] };
+
+// Issue - structured, never a locale string
+interface LoydIssue {
+  code:     string;                          // "ERR_STRING_INVALID_EMAIL"
+  path:     ReadonlyArray<string | number>;  // ["profile", "email"]
+  message?: string;                          // set by @loydjs/error-engine
+  meta?:    Record<string, unknown>;         // { min: 2, actual: 1 }
+}
+
+// Schema interface - implemented by all schema types
+interface LoydSchema<TOutput, TInput = TOutput> {
+  readonly _type: string;
+  safeParse(input: unknown): LoydResult<TOutput>;
+  parse(input: unknown): LoydResult<TOutput>;
+  parseOrThrow(input: unknown): TOutput;
+  meta(): SchemaMeta;
+  describe(description: string): this;
+}
+```
+
+---
+
+## Dependencies
+
+| Package | Role |
+|:---|:---|
+| none | `@loydjs/core` has zero runtime dependencies |
+
+## Used by
+
+| Package | Why |
+|:---|:---|
+| `@loydjs/schema` | Extends `BaseSchema` for all primitive and composite types |
+| `@loydjs/compiler` | Imports `LoydSchema`, `LoydResult` for codegen types |
+| `@loydjs/async` | Imports `LoydResult` for async pipeline |
+| `@loydjs/runtime` | Imports `LoydSchema`, `LoydResult` for executor |
+| `@loydjs/react` | Imports `LoydSchema` for form types |
+| all other packages | Depend on core types and interfaces |
 
 ---
 
 ## Documentation
 
-For the full API reference, guides, and examples, visit the official documentation:
-
-**[https://loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
+**[loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
 
 ---
 
 ## License
 
-MIT 
+MIT © [b3nito404](https://github.com/b3nito404)

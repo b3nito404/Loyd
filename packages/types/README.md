@@ -1,171 +1,178 @@
 <div align="center">
 
-<h1>Loyd</h1>
+<h1>@loydjs/types</h1>
 
-
-**High-performance, tree-shakable schema validation for TypeScript.**
+<p><strong>TypeScript type utilities for Loyd schemas.</strong><br/>
+Infer · InferInput · InferOutput · Zero runtime cost.</p>
 
 [![CI](https://github.com/b3nito404/loyd/actions/workflows/ci.yml/badge.svg)](https://github.com/b3nito404/loyd/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Bundle](https://img.shields.io/badge/bundle-0.8kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/schema)
+[![Bundle](https://img.shields.io/badge/bundle-0kb-brightgreen.svg)](https://bundlephobia.com/package/@loydjs/types)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue.svg)](https://www.typescriptlang.org)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/b3nito404/loyd/releases)
+[![npm downloads](https://img.shields.io/npm/dm/@loydjs/types?color=6366f1&label=downloads)](https://www.npmjs.com/package/@loydjs/types)
 
 </div>
 
 ---
 
-## Key features
+## Overview
 
-- **0.8 kb minimal bundle** : functional `pipe()` composition enables full tree-shaking; import only what you use
-- **JIT compiler** : `compile(schema)` generates a pure JavaScript function via `new Function()`; subsequent calls are **2× faster** than `safeParse` on hot paths
-- **Structured i18n** : validators emit `{ code, path, meta }`, never locale strings; swap locales at runtime without touching your schemas
-- **Two-pass async pipeline** : sync rules execute first; async rules only if sync passes; multiple async rules run in parallel via `Promise.all`
-- **Field dependency graph** : `buildDag(schema, deps)` enables incremental revalidation; change one field -> revalidate only it and its dependents
-- **Native React integration** : `useForm`, `useField`, `useFieldArray` with zero external dependencies, backed by the DAG
+`@loydjs/types` is a type-only package — it ships zero runtime code. It provides TypeScript utility types for inferring the input and output types of any Loyd schema, and helper types for building type-safe applications on top of Loyd.
 
 ---
 
 ## Installation
 
 ```sh
-# Core  start here
-npm install @loydjs/schema @loydjs/core @loydjs/types
-
-# Optional packages
-npm install @loydjs/async          # two-pass async pipeline
-npm install @loydjs/compiler       # JIT compilation
-npm install @loydjs/error-engine   # structured i18n
-npm install @loydjs/react          # React hooks (requires @loydjs/graph)
-npm install @loydjs/graph          # field dependency DAG
-npm install @loydjs/zod-compat     # Zod migration utilities
-npm install @loydjs/openapi        # OpenAPI 3.1 / JSON Schema export
-npm install @loydjs/vite           # Vite / Rollup AOT plugin
+npm install @loydjs/types
 ```
-> **Requires** Node.js ≥ 20, TypeScript ≥ 5.4, and `"strict": true` in your `tsconfig.json`.
+
+> **Requires** `@loydjs/core` · TypeScript ≥ 5.4 · `"strict": true` in `tsconfig.json`
 
 ---
 
-## Quick start
+## API
+
+### `Infer<TSchema>`
+
+Infers the output type of a schema — the type of `result.data` after a successful `safeParse`.
 
 ```ts
-import { object, pipe, string, number, email, minLength } from "@loydjs/schema";
-import { parse, safeParse } from "@loydjs/core";
+import { object, string, number, array, optional } from "@loydjs/schema";
 import type { Infer } from "@loydjs/types";
 
-// 1. Define your schema
 const UserSchema = object({
-  name:  pipe(string(), minLength(2)),
-  email: pipe(string(), email()),
-  age:   number().int().min(0),
+  id:      number().int().min(1),
+  name:    string().minLength(2),
+  email:   string().email(),
+  age:     optional(number().int().min(0)),
+  roles:   array(string()),
 });
 
-// 2. Infer the TypeScript type - zero runtime cost
 type User = Infer<typeof UserSchema>;
-// -> { name: string; email: string; age: number }
+// {
+//   id:    number
+//   name:  string
+//   email: string
+//   age?:  number | undefined
+//   roles: string[]
+// }
+```
 
-// 3a. parse()  throws LoydError on failure
-const user = parse(UserSchema, req.body);
+### `InferOutput<TSchema>`
 
-// 3b. safeParse()  never throws
-const result = safeParse(UserSchema, formData);
-if (result.success) {
-  console.log(result.data.name); // typed as User 
-} else {
-  result.issues.forEach(issue => {
-    console.log(issue.code);  // "ERR_STRING_TOO_SHORT"
-    console.log(issue.path);  // ["name"]
-    console.log(issue.meta);  // { min: 2, actual: 1 }
-  });
+Alias for `Infer`. Explicit name for cases where you want to be clear about direction.
+
+```ts
+import type { InferOutput } from "@loydjs/types";
+
+type UserOutput = InferOutput<typeof UserSchema>;
+// same as Infer<typeof UserSchema>
+```
+
+### `InferInput<TSchema>`
+
+Infers the input type — what the schema accepts before validation and transformation. Differs from the output type when transforms are applied (e.g. `.trim()`, `.toLowerCase()`).
+
+```ts
+import { string } from "@loydjs/schema";
+import type { InferInput, InferOutput } from "@loydjs/types";
+
+const NameSchema = string().trim().toLowerCase();
+
+type NameInput  = InferInput<typeof NameSchema>;  // string
+type NameOutput = InferOutput<typeof NameSchema>; // string (transformed)
+```
+
+### `SchemaMap`
+
+The type used for `object()` shape definitions.
+
+```ts
+import type { SchemaMap } from "@loydjs/types";
+import type { LoydSchema } from "@loydjs/core";
+
+function buildForm<T extends SchemaMap>(shape: T) {
+  return object(shape);
 }
 ```
 
-### React forms
+### `InferSchemaMap<TShape>`
 
-```tsx
-import { useForm } from "@loydjs/react";
-
-function LoginForm() {
-  const { register, handleSubmit, state } = useForm({
-    schema: LoginSchema,
-    defaultValues: { email: "", password: "" },
-    mode: "onChange",
-  });
-
-  return (
-    <form onSubmit={handleSubmit(onValid, onInvalid)}>
-      <input {...register("email")} type="email" />
-      <input {...register("password")} type="password" />
-      <button type="submit" disabled={state.isSubmitting}>Sign in</button>
-    </form>
-  );
-}
-```
-
-### JIT compilation
+Infers the output type of an object shape directly.
 
 ```ts
-import { compile } from "@loydjs/compiler";
+import type { InferSchemaMap } from "@loydjs/types";
 
-const validate = compile(UserSchema);
+const shape = {
+  name:  string(),
+  email: string().email(),
+};
 
-// 2× faster on hot paths - compiled once, cached per schema instance
-const result = validate(input); // LoydResult<User>
-```
-
-### i18n error formatting
-
-```ts
-import { configureFormatter, fr } from "@loydjs/error-engine";
-
-// Call once at app startup
-configureFormatter("fr", fr);
-
-// Issues are now formatted in French
-const result = safeParse(UserSchema, badInput);
-// result.issues[0].message -> "Minimum 2 caractères (reçu : 1)"
-```
-
-### Migrate from Zod
-
-```ts
-import { fromZod, runCodemod } from "@loydjs/zod-compat";
-
-// Convert a single schema
-const LoydUser = fromZod(zodUserSchema);
-
-// Or run the automated codemod across your entire codebase
-await runCodemod("./src", { write: true, verbose: true });
+type FormData = InferSchemaMap<typeof shape>;
+// { name: string; email: string }
 ```
 
 ---
 
-## Packages
+## Usage patterns
 
-| Package | Description | Size |
-|---|---|---|
-| `@loydjs/core` | `parse`, `safeParse`, `LoydError`, `BaseSchema` | 3.9 kb |
-| `@loydjs/schema` | All primitives, composites, modifiers, refinements | tree-shakeable |
-| `@loydjs/types` | `Infer<>`, `InferInput<>`, `InferOutput<>` | 0 kb runtime |
-| `@loydjs/async` | `parseAsync`, two-pass pipeline, `AbortSignal` | ~2 kb |
-| `@loydjs/compiler` | `compile()`, JIT codegen, cache management | ~4 kb |
-| `@loydjs/error-engine` | `createFormatter`, en/fr/es/ar locales | ~3 kb |
-| `@loydjs/graph` | `buildDag`, `validateIncremental`, dirty tracking | ~3 kb |
-| `@loydjs/react` | `useForm`, `useField`, `useFieldArray`, `FormProvider` | ~8 kb |
-| `@loydjs/zod-compat` | `fromZod`, `toZod`, `runCodemod` | ~5 kb |
-| `@loydjs/openapi` | `toOpenApi`, `toJsonSchema`, `toOpenApiComponents` | ~4 kb |
-| `@loydjs/vite` | `loydPlugin()` - Vite/Rollup AOT compilation | ~2 kb |
+### API route types
+
+```ts
+import type { Infer } from "@loydjs/types";
+
+const CreatePostSchema = object({
+  title:   string().minLength(3).maxLength(200),
+  body:    string().minLength(10),
+  tags:    array(string()).max(10),
+  published: boolean(),
+});
+
+type CreatePostInput = Infer<typeof CreatePostSchema>;
+
+async function createPost(data: CreatePostInput) {
+  // data is fully typed
+  const post = await db.posts.create(data);
+  return post;
+}
+```
+
+### Generic validators
+
+```ts
+import type { Infer } from "@loydjs/types";
+import type { LoydSchema } from "@loydjs/core";
+import { safeParse } from "@loydjs/core";
+
+function validate<T extends LoydSchema<unknown>>(
+  schema: T,
+  input: unknown
+): Infer<T> {
+  const result = safeParse(schema, input);
+  if (!result.success) throw new Error(result.issues[0].code);
+  return result.data as Infer<T>;
+}
+```
+
+---
+
+## Dependencies
+
+| Package | Role |
+|:---|:---|
+| `@loydjs/core` | `LoydSchema` base type for type inference |
+
+> `@loydjs/types` has zero runtime dependencies and ships no JavaScript.
 
 ---
 
 ## Documentation
 
-For the full API reference, guides, and examples, visit the official documentation:
-
-**[https://loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
+**[loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
 
 ---
 
 ## License
 
-MIT 
+MIT © [b3nito404](https://github.com/b3nito404)
