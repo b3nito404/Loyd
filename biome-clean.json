@@ -54,15 +54,6 @@
     }
   },
   "files": {
-    "ignore": [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/.turbo/**",
-      "**/coverage/**",
-      "fix-all.mjs",
-      "build-ordered.mjs",
-      "setup.mjs",
-      "fix-packages.mjs"
-    ]
+    "ignore": ["**/node_modules/**", "**/dist/**", "**/.turbo/**", "**/coverage/**"]
   }
 }

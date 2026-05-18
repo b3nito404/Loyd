@@ -1,4 +1,3 @@
-// packages/core/src/brand.ts
 import type { Branded } from "./types.js";
 export function asBranded<T, B extends string>(value: T): Branded<T, B> {
   return value as Branded<T, B>;
