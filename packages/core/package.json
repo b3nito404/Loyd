@@ -1,8 +1,13 @@
 {
   "name": "@loydjs/core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Loyd core — zero-dependency foundation",
-  "keywords": ["loyd", "validation", "typescript", "schema"],
+  "keywords": [
+    "loyd",
+    "validation",
+    "typescript",
+    "schema"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -20,7 +25,11 @@
       }
     }
   },
-  "files": ["README.md", "dist", "src"],
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
