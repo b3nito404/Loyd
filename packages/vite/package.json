@@ -2,12 +2,7 @@
   "name": "@loydjs/vite",
   "version": "1.1.0",
   "description": "Loyd vite - Vite/Rollup AOT plugin",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "vite"
-  ],
+  "keywords": ["loyd", "validation", "typescript", "vite"],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -25,11 +20,7 @@
       }
     }
   },
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",

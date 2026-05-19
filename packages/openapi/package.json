@@ -2,12 +2,7 @@
   "name": "@loydjs/openapi",
   "version": "1.0.1",
   "description": "Loyd openapi — JSONSchema + OpenAPI export",
-  "keywords": [
-    "loyd",
-    "validation",
-    "typescript",
-    "schema"
-  ],
+  "keywords": ["loyd", "validation", "typescript", "schema"],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -25,11 +20,7 @@
       }
     }
   },
-  "files": [
-    "README.md",
-    "dist",
-    "src"
-  ],
+  "files": ["README.md", "dist", "src"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
