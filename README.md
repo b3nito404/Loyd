@@ -1,9 +1,8 @@
-<div align="center">
+# Loydjs
 
-<h1>Loyd</h1>
+**Tree-shakable schema validation for TypeScript.**
 
-<p><strong>The fastest schema validation library for TypeScript.</strong><br/>
-JIT-compiled validators · Zero allocations on valid paths · Beats AJV on 13/15 benchmarks.</p>
+Loydjs is a TypeScript-first validation library. Define schemas for anything from a simple `string` to a complex nested object. It is fast, modular, and gives you structured errors you can translate.
 
 [![CI](https://github.com/b3nito404/loyd/actions/workflows/ci.yml/badge.svg)](https://github.com/b3nito404/loyd/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -11,86 +10,54 @@ JIT-compiled validators · Zero allocations on valid paths · Beats AJV on 13/15
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue.svg)](https://www.typescriptlang.org)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/b3nito404/loyd/releases)
 [![npm downloads](https://img.shields.io/npm/dt/@loydjs/schema.svg)](https://www.npmjs.com/package/@loydjs/schema)
+[![GitHub stars](https://img.shields.io/github/stars/b3nito404/loyd.svg?style=social)](https://github.com/b3nito404/loyd/stargazers)
 
-</div>
+## Table of contents
 
----
-
-## Benchmarks
-
-> Node.js 22 · ops/sec · higher is better  
-> **Loyd compiled** uses `compile(schema)` - JIT-compiled validator, cached per schema instance.
-
-![Benchmarks](./packages/compiler/bench/bench.svg)
-
-> Run locally: `pnpm --filter @loydjs/compiler exec vitest bench`
-
-### Full results
-
-| Benchmark | Loyd compiled | AJV | Valibot | Zod |
-|:---|---:|---:|---:|---:|
-| string valid | **fastest** | 5.36× slower | 1.94× slower | 2.39× slower |
-| number valid | **fastest** | 1.08× slower | 3.53× slower | 2.65× slower |
-| object flat valid | **fastest** | 1.37× slower | 5.37× slower | 5.83× slower |
-| object flat invalid | **fastest** | 1.09× slower | 9.05× slower | 100× slower |
-| object deep valid | **fastest** | 1.71× slower | 12.21× slower | 19.78× slower |
-| object deep invalid | **fastest** | 1.01× slower | 2.56× slower | 81× slower |
-| array 1000 valid | **fastest** | 1.43× slower | 12.35× slower | 14.66× slower |
-| array 1000 invalid | **fastest** | 1.75× slower | 15.10× slower | 55× slower |
-| union first variant | **fastest** | — | 1.21× slower | 1.57× slower |
-| union last variant | **fastest** | — | 2.77× slower | 1.66× slower |
-| type check string | **fastest** | 1.14× slower | 1.73× slower | 3.56× slower |
-| stress flat 10k | **fastest** | 1.17× slower | 6.70× slower | 9.99× slower |
-| stress deep 1k | **fastest** | 1.97× slower | 19.95× slower | 15.85× slower |
-
----
-
-## Why Loyd is fast
-
-Three techniques that no other TypeScript validation library combines:
-
-**Static inline path** - error paths are emitted as compile-time literals `["profile","address","city"]`. Zero heap allocation on the valid path , paths only exist when an error actually occurs.
-
-**Side-effect-aware codegen** - the compiler tracks which fields can mutate their value. Fields that can't (`number`, `boolean`, `literal`, pure `string`) skip the write-back entirely. No property writes on the valid path.
-
-**Rule fingerprinting** - the optimizer runs each validation closure against sentinel values at compile time, identifies its behavior, then emits flat inline code (`if (v.length < 2)`) instead of calling `safeParse` recursively.
-
----
-
-## Key features
-
-- **0.8 kb minimal bundle** - `pipe()` composition enables full tree-shaking; import only what you use
-- **JIT compiler** - `compile(schema)` generates a pure JS function via `new Function()`; beats AJV on 13/15 benchmarks
-- **Zero-copy executor** - `zeroCopyExecutor.run()` skips result object allocation on the success path
-- **Structured errors** - validators emit `{ code, path, meta }`, never locale strings; swap locales at runtime
-- **Two-pass async pipeline** - sync rules first, async rules only if sync passes, parallel via `Promise.all`
-- **Field dependency graph** - `buildDag(schema, deps)` enables incremental revalidation of dependent fields
-- **Native React integration** - `useForm`, `useField`, `useFieldArray` with zero external dependencies
-- **AOT Vite plugin** - `loydPlugin()` replaces `compile()` calls with flat inline code at build time
-
----
+- [Installation](#installation)
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Defining schemas](#defining-schemas)
+- [Validating data](#validating-data)
+- [JIT compilation](#jit-compilation)
+- [Zero-copy executor](#zero-copy-executor)
+- [Async validation](#async-validation)
+- [React forms](#react-forms)
+- [i18n error messages](#i18n-error-messages)
+- [AOT Vite plugin](#aot-vite-plugin)
+- [OpenAPI / JSON Schema export](#openapi--json-schema-export)
+- [Migrate from Zod](#migrate-from-zod)
+- [Packages](#packages)
+- [Documentation](#documentation)
+- [License](#license)
 
 ## Installation
 
-```sh
-# Core - start here
-npm install @loydjs/schema @loydjs/core @loydjs/types
+Start with the three core packages:
 
-# Optional packages
-npm install @loydjs/compiler       # JIT compilation - compile(schema)
-npm install @loydjs/runtime        # Zero-copy executor, freeze, strict mode
-npm install @loydjs/async          # Two-pass async pipeline
-npm install @loydjs/error-engine   # Structured i18n (en/fr/es/ar)
-npm install @loydjs/react          # React hooks (requires @loydjs/graph)
-npm install @loydjs/graph          # Field dependency DAG
-npm install @loydjs/zod-compat     # Zod migration utilities
-npm install @loydjs/openapi        # OpenAPI 3.1 / JSON Schema export
-npm install @loydjs/vite           # Vite / Rollup AOT plugin
+```sh
+npm install @loydjs/schema @loydjs/core @loydjs/types
 ```
 
-> **Requires** Node.js ≥ 20, TypeScript ≥ 5.4, `"strict": true` in `tsconfig.json`.
+Then add optional packages only when you need them:
 
----
+```sh
+npm install @loydjs/compiler       # JIT compilation
+npm install @loydjs/runtime        # Zero-copy executor
+npm install @loydjs/async          # Async validation
+npm install @loydjs/error-engine   # i18n
+npm install @loydjs/react          # React hooks
+npm install @loydjs/graph          # Field dependency DAG
+npm install @loydjs/zod-compat     # Zod migration
+npm install @loydjs/openapi        # OpenAPI / JSON Schema
+npm install @loydjs/vite           # Vite plugin
+```
+
+## Requirements
+
+- Node.js 20+
+- TypeScript 5.4+
+- `"strict": true` in your `tsconfig.json`
 
 ## Quick start
 
@@ -114,48 +81,60 @@ if (result.success) {
   console.log(result.data.name); // typed as User
 } else {
   result.issues.forEach(issue => {
-    console.log(issue.code);  // "ERR_STRING_INVALID_EMAIL"
-    console.log(issue.path);  // ["email"]
-    console.log(issue.meta);  // { expected: "email" }
+    console.log(issue.code); // "ERR_STRING_INVALID_EMAIL"
+    console.log(issue.path); // ["email"]
+    console.log(issue.meta); // { expected: "email" }
   });
 }
 ```
 
----
+## Defining schemas
+
+Loyd's API is immutable. Every method returns a new instance, so schemas can be safely shared and composed.
+
+```ts
+import { object, string, number, array, union, literal } from "@loydjs/schema";
+
+const PostSchema = object({
+  id:       string().uuid(),
+  title:    string().minLength(1).maxLength(200),
+  tags:     array(string()).maxItems(10),
+  status:   union([literal("draft"), literal("published")]),
+  authorId: string().uuid(),
+});
+```
+
+## Validating data
+
+`safeParse` returns a result object. On success you get typed data. On failure you get structured issues.
+
+```ts
+const result = safeParse(UserSchema, req.body);
+```
 
 ## JIT compilation
 
-The compiler runs once per schema instance and caches the result. Subsequent calls hit the compiled function directly - no schema traversal, no dispatch, no allocations on the valid path.
+`compile(schema)` generates a pure JS function and caches it per schema instance. After the first call, validation hits the compiled function directly.
 
 ```ts
 import { compile } from "@loydjs/compiler";
 
 const validate = compile(UserSchema);
-// Generates and caches a pure JS function:
-//   function __loyd_v1__(input) {
-//     if (typeof input !== "object" || input === null) { ... }
-//     const name = input["name"];
-//     if (typeof name !== "string") { ... }
-//     if (name.length < 2) { ... }
-//     ...
-//   }
 
 for (const item of largeDataset) {
   const result = validate(item); // LoydResult<User>
 }
 ```
 
----
-
 ## Zero-copy executor
+
+Skip result object allocation on the success path, or configure the executor to match your needs.
 
 ```ts
 import { zeroCopyExecutor, createExecutor } from "@loydjs/runtime";
 
-// Skip result object allocation on success
 const result = zeroCopyExecutor.run(UserSchema, input);
 
-// Custom executor
 const executor = createExecutor({
   zeroCopy: true,   // skip { success, data, issues } allocation on success
   abortEarly: true, // stop at first error per object
@@ -166,42 +145,9 @@ const executor = createExecutor({
 const result = executor.run(UserSchema, input);
 ```
 
----
-
-## AOT Vite plugin
-
-Replaces `compile()` calls with flat inline validators at build time - zero runtime compilation overhead.
-
-```ts
-// vite.config.ts
-import { loydPlugin } from "@loydjs/vite";
-
-export default {
-  plugins: [
-    loydPlugin({
-      schemas: { UserSchema, PostSchema }, // resolved statically at build time
-    }),
-  ],
-};
-```
-
-```ts
-// Your app code - untouched
-const validate = compile(UserSchema);
-
-// After AOT transform - what ships in your bundle:
-// function __loyd_UserSchema__(input) {
-//   if (typeof input !== "object" || ...) { ... }
-//   const name = input["name"];
-//   if (name.length < 2) { ... }
-//   ...
-// }
-// const validate = __loyd_UserSchema__;
-```
-
----
-
 ## Async validation
+
+Sync rules run first. Async rules run only if sync passes, and they run in parallel.
 
 ```ts
 import { parseAsync } from "@loydjs/async";
@@ -214,11 +160,8 @@ const UniqueEmailSchema = string().email().pipe(
   }, { code: "ERR_EMAIL_TAKEN" })
 );
 
-// Sync rules run first, async only if sync passes
 const result = await parseAsync(UniqueEmailSchema, formData.email);
 ```
-
----
 
 ## React forms
 
@@ -245,21 +188,35 @@ function SignupForm() {
 }
 ```
 
----
-
 ## i18n error messages
+
+Validators emit codes, not locale strings. You can swap locales at runtime.
 
 ```ts
 import { configureFormatter, fr, es, ar } from "@loydjs/error-engine";
 
-// Call once at app startup
 configureFormatter("fr", fr);
 
 const result = safeParse(UserSchema, badInput);
 // result.issues[0].message -> "Minimum 2 caractères (reçu : 1)"
 ```
 
----
+## AOT Vite plugin
+
+Replace `compile()` calls with inline validators at build time. No runtime compilation.
+
+```ts
+// vite.config.ts
+import { loydPlugin } from "@loydjs/vite";
+
+export default {
+  plugins: [
+    loydPlugin({
+      schemas: { UserSchema, PostSchema },
+    }),
+  ],
+};
+```
 
 ## OpenAPI / JSON Schema export
 
@@ -270,48 +227,36 @@ const spec = toOpenApi(UserSchema, { title: "User", version: "1.0.0" });
 const jsonSchema = toJsonSchema(UserSchema);
 ```
 
----
-
 ## Migrate from Zod
 
 ```ts
 import { fromZod, runCodemod } from "@loydjs/zod-compat";
 
-// Single schema
 const LoydUser = fromZod(zodUserSchema);
 
-// Entire codebase - automated migration
 await runCodemod("./src", { write: true, verbose: true });
 ```
 
----
-
 ## Packages
 
-| Package | Description | Size |
-|:---|:---|---:|
-| `@loydjs/core` | `parse`, `safeParse`, `LoydError`, `BaseSchema` | 3.9 kb |
-| `@loydjs/schema` | Primitives, composites, modifiers, refinements | tree-shakeable |
-| `@loydjs/types` | `Infer<>`, `InferInput<>`, `InferOutput<>` | 0 kb runtime |
-| `@loydjs/compiler` | `compile()`, JIT codegen, rule fingerprinting | ~4 kb |
-| `@loydjs/runtime` | `createExecutor`, zeroCopy, freeze, strict mode | ~2 kb |
-| `@loydjs/async` | `parseAsync`, two-pass pipeline, `AbortSignal` | ~2 kb |
-| `@loydjs/error-engine` | `createFormatter`, en/fr/es/ar locales | ~3 kb |
-| `@loydjs/graph` | `buildDag`, `validateIncremental`, dirty tracking | ~3 kb |
-| `@loydjs/react` | `useForm`, `useField`, `useFieldArray`, `FormProvider` | ~8 kb |
-| `@loydjs/zod-compat` | `fromZod`, `toZod`, `runCodemod` | ~5 kb |
-| `@loydjs/openapi` | `toOpenApi`, `toJsonSchema` | ~4 kb |
-| `@loydjs/vite` | `loydPlugin()` - AOT compilation | ~2 kb |
-
----
+- `@loydjs/core`: `parse`, `safeParse`, `LoydError`, `BaseSchema` (3.9 kb)
+- `@loydjs/schema`: Primitives, composites, modifiers, refinements (tree-shakeable)
+- `@loydjs/types`: `Infer<>`, `InferInput<>`, `InferOutput<>` (0 kb runtime)
+- `@loydjs/compiler`: `compile()`, JIT codegen, rule fingerprinting (~4 kb)
+- `@loydjs/runtime`: `createExecutor`, zeroCopy, freeze, strict mode (~2 kb)
+- `@loydjs/async`: `parseAsync`, two-pass pipeline, `AbortSignal` (~2 kb)
+- `@loydjs/error-engine`: `createFormatter`, en/fr/es/ar locales (~3 kb)
+- `@loydjs/graph`: `buildDag`, `validateIncremental`, dirty tracking (~3 kb)
+- `@loydjs/react`: `useForm`, `useField`, `useFieldArray`, `FormProvider` (~8 kb)
+- `@loydjs/zod-compat`: `fromZod`, `toZod`, `runCodemod` (~5 kb)
+- `@loydjs/openapi`: `toOpenApi`, `toJsonSchema` (~4 kb)
+- `@loydjs/vite`: `loydPlugin()`, AOT compilation (~2 kb)
 
 ## Documentation
 
 Full API reference, guides, and examples:
 
-**[https://loyddev-psi.vercel.app](https://loyddev-psi.vercel.app)**
-
----
+https://loyddev-psi.vercel.app/docs
 
 ## License
 
