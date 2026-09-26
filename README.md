@@ -1,8 +1,10 @@
-# Loydjs
+<div align="center">
+
+# Loyd
 
 **Tree-shakable schema validation for TypeScript.**
 
-Loydjs is a TypeScript-first validation library. Define schemas for anything from a simple `string` to a complex nested object. It is fast, modular, and gives you structured errors you can translate.
+Loyd is a TypeScript-first validation library. Define schemas for anything from a simple `string` to a complex nested object. It is fast, modular, and gives you structured errors you can translate.
 
 [![CI](https://github.com/b3nito404/loyd/actions/workflows/ci.yml/badge.svg)](https://github.com/b3nito404/loyd/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -12,26 +14,9 @@ Loydjs is a TypeScript-first validation library. Define schemas for anything fro
 [![npm downloads](https://img.shields.io/npm/dt/@loydjs/schema.svg)](https://www.npmjs.com/package/@loydjs/schema)
 [![GitHub stars](https://img.shields.io/github/stars/b3nito404/loyd.svg?style=social)](https://github.com/b3nito404/loyd/stargazers)
 
-## Table of contents
+</div>
 
-- [Installation](#installation)
-- [Requirements](#requirements)
-- [Quick start](#quick-start)
-- [Defining schemas](#defining-schemas)
-- [Validating data](#validating-data)
-- [JIT compilation](#jit-compilation)
-- [Zero-copy executor](#zero-copy-executor)
-- [Async validation](#async-validation)
-- [React forms](#react-forms)
-- [i18n error messages](#i18n-error-messages)
-- [AOT Vite plugin](#aot-vite-plugin)
-- [OpenAPI / JSON Schema export](#openapi--json-schema-export)
-- [Migrate from Zod](#migrate-from-zod)
-- [Packages](#packages)
-- [Documentation](#documentation)
-- [License](#license)
-
-## Installation
+## Quick start
 
 Start with the three core packages:
 
@@ -39,27 +24,7 @@ Start with the three core packages:
 npm install @loydjs/schema @loydjs/core @loydjs/types
 ```
 
-Then add optional packages only when you need them:
-
-```sh
-npm install @loydjs/compiler       # JIT compilation
-npm install @loydjs/runtime        # Zero-copy executor
-npm install @loydjs/async          # Async validation
-npm install @loydjs/error-engine   # i18n
-npm install @loydjs/react          # React hooks
-npm install @loydjs/graph          # Field dependency DAG
-npm install @loydjs/zod-compat     # Zod migration
-npm install @loydjs/openapi        # OpenAPI / JSON Schema
-npm install @loydjs/vite           # Vite plugin
-```
-
-## Requirements
-
-- Node.js 20+
-- TypeScript 5.4+
-- `"strict": true` in your `tsconfig.json`
-
-## Quick start
+Then create a schema, infer its TypeScript type, and validate data with `safeParse`.
 
 ```ts
 import { object, string, number } from "@loydjs/schema";
@@ -88,6 +53,30 @@ if (result.success) {
 }
 ```
 
+That is all you need for basic validation. Everything below is optional and tree-shakeable.
+
+## Optional packages
+
+Add these only when you need them:
+
+```sh
+npm install @loydjs/compiler       # JIT compilation
+npm install @loydjs/runtime        # Zero-copy executor
+npm install @loydjs/async          # Async validation
+npm install @loydjs/error-engine   # i18n
+npm install @loydjs/react          # React hooks
+npm install @loydjs/graph          # Field dependency DAG
+npm install @loydjs/zod-compat     # Zod migration
+npm install @loydjs/openapi        # OpenAPI / JSON Schema
+npm install @loydjs/vite           # Vite plugin
+```
+
+## Requirements
+
+- Node.js 20+
+- TypeScript 5.4+
+- `"strict": true` in your `tsconfig.json`
+
 ## Defining schemas
 
 Loyd's API is immutable. Every method returns a new instance, so schemas can be safely shared and composed.
@@ -102,14 +91,6 @@ const PostSchema = object({
   status:   union([literal("draft"), literal("published")]),
   authorId: string().uuid(),
 });
-```
-
-## Validating data
-
-`safeParse` returns a result object. On success you get typed data. On failure you get structured issues.
-
-```ts
-const result = safeParse(UserSchema, req.body);
 ```
 
 ## JIT compilation
