@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [main]
+    branches: [main, ci/fix-release-workflow]
 
 jobs:
   release:
